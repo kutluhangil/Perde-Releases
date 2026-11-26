@@ -1,0 +1,152 @@
+---
+// Perde ve Infuse: tarihli, kaynaklı, iki yönlü dürüst tablo.
+import { rows, only, checkedOn, source } from '../data/compare';
+import { t, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang).compare;
+const mark = { yes: '●', partial: '◐', no: '○' } as const;
+const word = { yes: d.yes, partial: d.partial, no: d.no } as const;
+const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(checkedOn));
+---
+
+<section class="compare section" id="karsilastir" aria-labelledby="compare-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="compare-title">{d.heading}</h2>
+      <p>{d.sub}</p>
+    </header>
+
+    <div class="table" role="region" aria-labelledby="compare-title" tabindex="0">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">{d.feature}</th>
+            <th scope="col" class="perde">{d.perde}</th>
+            <th scope="col">{d.infuse}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            rows.map((r) => (
+              <tr>
+                <th scope="row">{r.topic[lang]}</th>
+                {[r.perde, r.infuse].map((c, i) => (
+                  <td class:list={[c.v, { perde: i === 0 }]}>
+                    <span class="mark" aria-hidden="true">{mark[c.v]}</span>
+                    <span class="visually-hidden">{word[c.v]}. </span>
+                    {c.note ? <span class="note">{c.note[lang]}</span> : <span class="note">{word[c.v]}</span>}
+                  </td>
+                ))}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="after">
+      <div class="only">
+        <h3>{d.onlyHeading}</h3>
+        <ul>{only.map((o) => <li>{o[lang]}</li>)}</ul>
+      </div>
+      <p class="source">
+        {d.checked} <a href={source} rel="noopener">{date}</a>. {d.note}
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .table {
+    overflow-x: auto;
+    border-radius: 24px;
+    background: var(--bg-3);
+    box-shadow: 0 0 0 0.5px var(--line);
+  }
+  :global(:root[data-theme='dark']) .table {
+    background: var(--bg-2);
+  }
+  table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 18px 24px;
+    vertical-align: top;
+  }
+  thead th {
+    font-size: 1.125rem;
+    font-weight: 700;
+    padding-block: 22px;
+  }
+  tbody tr {
+    border-top: 1px solid var(--line);
+  }
+  tbody th {
+    font-weight: 600;
+    width: 34%;
+  }
+  td {
+    color: var(--ink-2);
+    width: 33%;
+  }
+  .perde {
+    background: color-mix(in srgb, var(--amber) 9%, transparent);
+  }
+  thead .perde {
+    color: var(--ink);
+  }
+  .mark {
+    display: inline-block;
+    width: 1.4em;
+    font-size: 0.875rem;
+  }
+  .yes .mark {
+    color: #30a14e;
+  }
+  .partial .mark {
+    color: var(--amber);
+  }
+  .no .mark {
+    color: var(--ink-3);
+  }
+  .yes .note {
+    color: var(--ink);
+  }
+  .after {
+    display: grid;
+    gap: 32px 64px;
+    margin-top: 40px;
+  }
+  @media (min-width: 960px) {
+    .after {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: end;
+    }
+  }
+  .only h3 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+  .only ul {
+    padding-left: 1.1em;
+    display: grid;
+    gap: 6px;
+    color: var(--ink-2);
+  }
+  .source {
+    font-size: 0.9375rem;
+    color: var(--ink-3);
+  }
+  .source a {
+    color: var(--ink-2);
+  }
+</style>

@@ -1,0 +1,518 @@
+[
+  {
+    "id": "dune-part-two",
+    "tmdb": 693134,
+    "title": {
+      "tr": "Dune: Çöl Gezegeni - Bölüm İki",
+      "en": "Dune: Part Two"
+    },
+    "year": 2024,
+    "minutes": 167,
+    "genres": [
+      {
+        "tr": "Bilim-Kurgu",
+        "en": "Science Fiction"
+      },
+      {
+        "tr": "Macera",
+        "en": "Adventure"
+      }
+    ],
+    "summary": {
+      "tr": "Paul, Harkonnen ailesinin saldırısından kurtulduktan sonra Fremenler ile birlikte yaşamaya başlar. Fremenler'in yardımı ile, Arrakis'in kontrolüne yeniden sahip olmak ve evrenin kaderini değiştirmek için mücadele eder. Fremenler, Paul'un liderliğinde Arrakis gezegenini özgürleştireceklerine ve galakside eşitlik ile adaleti sağlayacaklarına inanırlar.",
+      "en": "Follow the mythic journey of Paul Atreides as he unites with Chani and the Fremen while on a path of revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the known universe, Paul endeavors to prevent a terrible future only he can foresee."
+    },
+    "director": "Denis Villeneuve",
+    "cast": [
+      "Timothée Chalamet",
+      "Zendaya",
+      "Rebecca Ferguson"
+    ],
+    "scores": {
+      "tmdb": 8.1,
+      "imdb": 8.4,
+      "rt": 0,
+      "meta": 79
+    },
+    "file": "Dune.Part.Two.2024.2160p.WEB-DL.DDP5.1.Atmos.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": true,
+    "tint": "#d2b592",
+    "mood": "dark",
+    "logo": true
+  },
+  {
+    "id": "blade-runner-2049",
+    "tmdb": 335984,
+    "title": {
+      "tr": "Blade Runner 2049: Bıçak Sırtı",
+      "en": "Blade Runner 2049"
+    },
+    "year": 2017,
+    "minutes": 164,
+    "genres": [
+      {
+        "tr": "Bilim-Kurgu",
+        "en": "Science Fiction"
+      },
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      }
+    ],
+    "summary": {
+      "tr": "İlk filmdeki olayların üzerinden 30 yıldan daha uzun bir zaman geçmişken, Los Angeles Polis Departmanı'nda görev yapan Memur K, insanlığı büyük kargaşaya sürükleyecek ve hatta sonunu bile getirebilecek bir sırrı ortaya çıkarmıştır. Büyük bir felaketi önleyebilmek için Rick Deckard'ı bulup ondan bazı soruların yanıtlarını alması şarttır.",
+      "en": "Thirty years after the events of the first film, a new blade runner, LAPD Officer K, unearths a long-buried secret that has the potential to plunge what's left of society into chaos. K's discovery leads him on a quest to find Rick Deckard, a former LAPD blade runner who has been missing for 30 years."
+    },
+    "director": "Denis Villeneuve",
+    "cast": [
+      "Ryan Gosling",
+      "Harrison Ford",
+      "Ana de Armas"
+    ],
+    "scores": {
+      "tmdb": 7.6,
+      "imdb": 8,
+      "rt": 0,
+      "meta": 81
+    },
+    "file": "Blade.Runner.2049.2017.2160p.BluRay.TrueHD.7.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": true,
+    "tint": "#d243a7",
+    "mood": "dark",
+    "logo": true
+  },
+  {
+    "id": "la-la-land",
+    "tmdb": 313369,
+    "title": {
+      "tr": "Aşıklar Şehri",
+      "en": "La La Land"
+    },
+    "year": 2016,
+    "minutes": 129,
+    "genres": [
+      {
+        "tr": "Komedi",
+        "en": "Comedy"
+      },
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      }
+    ],
+    "summary": {
+      "tr": "Hayatlarında yön bulmaya çalışan iki tutkulu insan Sebastian ve Mia'nın yolları, Los Angeles'ta trafiğin sıkışık olduğu bir gün kesişir. Her ikisi de sanat tutkunu olan bu iki insan, hayallerini gerçekleştirme yolunda düşe kalka ilerlemektedir.  Sebastian Wilder geleneksel jazzın kolonlardan yükseldiği bir kulüp açma hayalinde, Mia Dolan ise kafesinde çalıştığı film platosunda kendine uygun tüm oyunculuk seçmelerine katılarak bir rol kapma telaşındadır. Bu iki insanın kalpleri birbiri için atmaya başladığında ortaya çıkan manzarayı hayat şartları bozacak, onları yavaş yavaş hayallerinden uzaklaştırmaya başlayacaktır.",
+      "en": "Mia, an aspiring actress, serves lattes to movie stars in between auditions and Sebastian, a jazz musician, scrapes by playing cocktail party gigs in dingy bars, but as success mounts they are faced with decisions that begin to fray the fragile fabric of their love affair, and the dreams they worked so hard to maintain in each other threaten to rip them apart."
+    },
+    "director": "Damien Chazelle",
+    "cast": [
+      "Ryan Gosling",
+      "Emma Stone",
+      "John Legend"
+    ],
+    "scores": {
+      "tmdb": 7.9,
+      "imdb": 8,
+      "rt": 0,
+      "meta": 94
+    },
+    "file": "La.La.Land.2016.2160p.BluRay.DTS-HD.MA.7.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": true,
+    "tint": "#6b76d2",
+    "mood": "dark",
+    "logo": true
+  },
+  {
+    "id": "interstellar",
+    "tmdb": 157336,
+    "title": {
+      "tr": "Yıldızlararası",
+      "en": "Interstellar"
+    },
+    "year": 2014,
+    "minutes": 169,
+    "genres": [
+      {
+        "tr": "Macera",
+        "en": "Adventure"
+      },
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      }
+    ],
+    "summary": {
+      "tr": "Dünya'nın kuraklık ve kıtlıkla yok oluşun eşiğine geldiği bir gelecekte, insanlığın hayatta kalabilmesi için yeni bir yuva bulması şarttır. Keşfedilen gizemli bir solucan deliği, bir grup astronot ve bilim insanına insanlık tarihinin en önemli görevini üstlenme fırsatı verir. Eski bir NASA pilotu olan Cooper, ailesini geride bırakarak yıldızlararası bir yolculuğa çıkar ve bilinmeyen galaksilerde insanlığın kurtuluşunu arar.",
+      "en": "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage."
+    },
+    "director": "Christopher Nolan",
+    "cast": [
+      "Matthew McConaughey",
+      "Anne Hathaway",
+      "Michael Caine"
+    ],
+    "scores": {
+      "tmdb": 8.5,
+      "imdb": 8.7,
+      "rt": 0,
+      "meta": 74
+    },
+    "file": "Interstellar.2014.2160p.BluRay.DTS-HD.MA.5.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": false,
+    "tint": "#d28699",
+    "mood": "dark",
+    "logo": true
+  },
+  {
+    "id": "mad-max-fury-road",
+    "tmdb": 76341,
+    "title": {
+      "tr": "Mad Max: Fury Road",
+      "en": "Mad Max: Fury Road"
+    },
+    "year": 2015,
+    "minutes": 121,
+    "genres": [
+      {
+        "tr": "Aksiyon",
+        "en": "Action"
+      },
+      {
+        "tr": "Macera",
+        "en": "Adventure"
+      }
+    ],
+    "summary": {
+      "tr": "Çalkantılı geçmişi Mad Max’i hayatta kalmak için en iyi yolun yalnız olmak gerektiğine inandırmıştır. Yine de, Furiosa adlı liderlerinin peşinde çorak topraklardaki savaş ortamından sürekli kaçarak hayatta kalmaya çalışan bir grubun arasına sürüklenir. Yaşadıkları ortamı zalimce yöneten Immortan Joe’dan kaçmaktadırlar. Joe ise kendisinden çalınan ve yeri doldurulamayacak derecede önemli kaybının peşindedir.",
+      "en": "An apocalyptic story set in the furthest reaches of our planet, in a stark desert landscape where humanity is broken, and most everyone is crazed fighting for the necessities of life. Within this world exist two rebels on the run who just might be able to restore order."
+    },
+    "director": "George Miller",
+    "cast": [
+      "Tom Hardy",
+      "Charlize Theron",
+      "Nicholas Hoult"
+    ],
+    "scores": {
+      "tmdb": 7.6,
+      "imdb": 8.1,
+      "rt": 0,
+      "meta": 90
+    },
+    "file": "Mad.Max.Fury.Road.2015.2160p.BluRay.TrueHD.7.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": true,
+    "tint": "#c1d27e",
+    "mood": "light",
+    "logo": true
+  },
+  {
+    "id": "the-grand-budapest-hotel",
+    "tmdb": 120467,
+    "title": {
+      "tr": "Büyük Budapeşte Oteli",
+      "en": "The Grand Budapest Hotel"
+    },
+    "year": 2014,
+    "minutes": 100,
+    "genres": [
+      {
+        "tr": "Komedi",
+        "en": "Comedy"
+      },
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      }
+    ],
+    "summary": {
+      "tr": "20. yüzyılın başlarında Gustave H., Büyük Budapeşte Oteli'nin işleyişini büyük bir profesyonellikle idare eden, müşterilerini en ince ayrıntılarına kadar tanıyan bir konsiyerj görevlisidir. Bir gün otele bellboy ve komi görevlisi olarak Zero Mustafa adında genç bir adam gelir ve kısa zamanda aralarında yakın bir arkadaşlık başlar. İkili birbirlerinin sırdaşı olurken yaşadıkları şehir de büyük bir savaşa doğru sürüklenmektedir. Bu esnada Gustave'ın yaşlı sevgilisi Madame D. esrarengiz bir şekilde hayata veda eder, ikili Madame D. adlı kadına veda etmek için yola çıkar. Bir asilzade olan Madame D. adlı kadının şatosuna vardıklarında miras paylaşırken denk gelirler. Madame D., Gustave'a miras olarak paha biçilmez bir rönesans tablosu bırakmıştır ve bunun açıklanmasıyla aile içerisinde büyük bir karmaşa çıkar. Bu andan itibaren belalarla dolu bir maceraya atılan Gustave ve Zero, gerçeklerin peşinde koşarken dışarıda da bir çağ değişmektedir.",
+      "en": "The Grand Budapest Hotel tells of a legendary concierge at a famous European hotel between the wars and his friendship with a young employee who becomes his trusted protégé. The story involves the theft and recovery of a priceless Renaissance painting, the battle for an enormous family fortune and the slow and then sudden upheavals that transformed Europe during the first half of the 20th century."
+    },
+    "director": "Wes Anderson",
+    "cast": [
+      "Ralph Fiennes",
+      "F. Murray Abraham",
+      "Tony Revolori"
+    ],
+    "scores": {
+      "tmdb": 8,
+      "imdb": 8.1,
+      "rt": 0,
+      "meta": 88
+    },
+    "file": "The.Grand.Budapest.Hotel.2014.1080p.BluRay.DTS-HD.MA.5.1.H264.mkv",
+    "uhd": false,
+    "hdr": false,
+    "subtitles": false,
+    "tint": "#d29490",
+    "mood": "light",
+    "logo": true
+  },
+  {
+    "id": "arrival",
+    "tmdb": 329865,
+    "title": {
+      "tr": "Geliş",
+      "en": "Arrival"
+    },
+    "year": 2016,
+    "minutes": 116,
+    "genres": [
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      },
+      {
+        "tr": "Bilim-Kurgu",
+        "en": "Science Fiction"
+      }
+    ],
+    "summary": {
+      "tr": "Ted Chiang'ın kısa öyküsünden sinemaya uyarlanan film, dünya dışı yapıların uzaydan yeryüzünde farklı noktalara iniş yapmasıyla dilbilimci Dr. Louise Banks ve ekibinin, uzaylıların geliş amacını çözmeye çalışmasına odaklanıyor. Uzaylılar bir tehlike midir yoksa barışçıl amaçlarla mı gelmişlerdir?",
+      "en": "Taking place after alien crafts land around the world, an expert linguist is recruited by the military to determine whether they come in peace or are a threat."
+    },
+    "director": "Denis Villeneuve",
+    "cast": [
+      "Amy Adams",
+      "Jeremy Renner",
+      "Forest Whitaker"
+    ],
+    "scores": {
+      "tmdb": 7.6,
+      "imdb": 7.9,
+      "rt": 0,
+      "meta": 81
+    },
+    "file": "Arrival.2016.2160p.WEB-DL.DDP5.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": true,
+    "tint": "#d2d2d2",
+    "mood": "light",
+    "logo": true
+  },
+  {
+    "id": "amelie",
+    "tmdb": 194,
+    "title": {
+      "tr": "Amelie",
+      "en": "Amélie"
+    },
+    "year": 2001,
+    "minutes": 122,
+    "genres": [
+      {
+        "tr": "Komedi",
+        "en": "Comedy"
+      },
+      {
+        "tr": "Romantik",
+        "en": "Romance"
+      }
+    ],
+    "summary": {
+      "tr": "Paris'te garsonluk yaparak, kendine özgü bir dünyada yaşayan saf, çekingen ve masum bir kızdır Amelie. Annesinin beklenmedik ölümü, babasının soğuk tavırları ve yaşadığı travmalar sonucu, sevimli ve boş şeylerle uğraşarak kendisine eğlence yaratmaya çalışsa da aslında hayatı sıkıcı bulduğu için kendisini son derece yalnız hissetmektedir. Bu kısır döngü Amelie’nin evde bulduğu bir kutuyu ve onun aracılığıyla sahibini keşfetmesiyle birlikte bir anda bıçak gibi kesiliverir... Amelie aşık olmuştur.",
+      "en": "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally discovers a gift for helping others. Soon Amelie is spending her days as a matchmaker, guardian angel, and all-around do-gooder. But when she bumps into a handsome stranger, will she find the courage to become the star of her very own love story?"
+    },
+    "director": "Jean-Pierre Jeunet",
+    "cast": [
+      "Audrey Tautou",
+      "Mathieu Kassovitz",
+      "Rufus"
+    ],
+    "scores": {
+      "tmdb": 7.9,
+      "imdb": 8.2,
+      "rt": 0,
+      "meta": 70
+    },
+    "file": "Amelie.2001.1080p.BluRay.DTS.5.1.H264.mkv",
+    "uhd": false,
+    "hdr": false,
+    "subtitles": true,
+    "tint": "#aad272",
+    "mood": "light",
+    "logo": true
+  },
+  {
+    "id": "parasite",
+    "tmdb": 496243,
+    "title": {
+      "tr": "Parazit",
+      "en": "Parasite"
+    },
+    "year": 2019,
+    "minutes": 133,
+    "genres": [
+      {
+        "tr": "Komedi",
+        "en": "Comedy"
+      },
+      {
+        "tr": "Gerilim",
+        "en": "Thriller"
+      }
+    ],
+    "summary": {
+      "tr": "Yoksul Kim ailesi, hileyle zengin Park ailesinin yanında çalışmaya başlar; ancak konutun altında gizli bir sığınak keşfetmeleriyle parazitçe yürüttükleri bu plan kontrolden çıkar ve şiddetli bir sınıf çatışmasına dönüşür.",
+      "en": "All unemployed, Ki-taek's family takes peculiar interest in the wealthy and glamorous Parks for their livelihood until they get entangled in an unexpected incident."
+    },
+    "director": "Bong Joon Ho",
+    "cast": [
+      "Song Kang-ho",
+      "Lee Sun-kyun",
+      "Cho Yeo-jeong"
+    ],
+    "scores": {
+      "tmdb": 8.5,
+      "imdb": 8.5,
+      "rt": 0,
+      "meta": 97
+    },
+    "file": "Parasite.2019.1080p.WEB-DL.DDP5.1.H264.mkv",
+    "uhd": false,
+    "hdr": false,
+    "subtitles": true,
+    "tint": "#d2ba9b",
+    "mood": "dark",
+    "logo": true
+  },
+  {
+    "id": "spirited-away",
+    "tmdb": 129,
+    "title": {
+      "tr": "Ruhların Kaçışı",
+      "en": "Spirited Away"
+    },
+    "year": 2001,
+    "minutes": 125,
+    "genres": [
+      {
+        "tr": "Animasyon",
+        "en": "Animation"
+      },
+      {
+        "tr": "Aile",
+        "en": "Family"
+      }
+    ],
+    "summary": {
+      "tr": "Film, küçük Chihiro ve ailesinin yeni bir kasabaya taşınmalarıyla açılır. Yolculuk esnasında yolda gördükleri bir tünele dikkat eden aile, tünelin içerisinden geçtiklerinde karşılaştıkları fantastik dünyanın içerisinde büyülenirler. Ancak bu kasabada yolunda gitmeyen bir şeyler vardır, bu büyü kısa bir zaman sonra bozulacaktır. Ailesini kaybeden küçük Chihiro, babasını kurtarmak için korku dolu bir maceraya atılacaktır.",
+      "en": "A young girl, Chihiro, becomes trapped in a strange new world of spirits. When her parents undergo a mysterious transformation, she must call upon the courage she never knew she had to free her family."
+    },
+    "director": "Hayao Miyazaki",
+    "cast": [
+      "Rumi Hiiragi",
+      "Miyu Irino",
+      "Mari Natsuki"
+    ],
+    "scores": {
+      "tmdb": 8.5,
+      "imdb": 8.6,
+      "rt": 0,
+      "meta": 96
+    },
+    "file": "Spirited.Away.2001.1080p.BluRay.AAC2.0.H264.mkv",
+    "uhd": false,
+    "hdr": false,
+    "subtitles": true,
+    "tint": "#1097d2",
+    "mood": "light",
+    "logo": true
+  },
+  {
+    "id": "little-women",
+    "tmdb": 331482,
+    "title": {
+      "tr": "Küçük Kadınlar",
+      "en": "Little Women"
+    },
+    "year": 2019,
+    "minutes": 135,
+    "genres": [
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      },
+      {
+        "tr": "Romantik",
+        "en": "Romance"
+      }
+    ],
+    "summary": {
+      "tr": "Louisa May Alcott’ın aynı adlı klasik romanından beyazperdeye uyarlanan film, İç Savaş sonrası Amerika'da yaşamlarını sürdürmeye çalışan dört kız kardeşin hikayesini anlatıyor. Meg (Emma Watson), Jo (Saoirse Ronan), Beth (Eliza Scanlen) ve Amy March (Florence Pugh) birbirinden tamamen farklı karaktere sahip dört kız kardeştir. Çocukluk dönemlerini geride bırakıp kadınlığa geçiş süreçlerinde kardeşler türlü dertlerle boğuşur. Babaları Amerikan İç Savaşı'na katılan dört genç kız, anneleri ile birlikte yaşam mücadelesi vermeye başlar. Bu zorlu süreçte en büyük kazançları birbirlerinin yanında olmalarıdır.",
+      "en": "Four sisters come of age in America in the aftermath of the Civil War."
+    },
+    "director": "Greta Gerwig",
+    "cast": [
+      "Saoirse Ronan",
+      "Emma Watson",
+      "Florence Pugh"
+    ],
+    "scores": {
+      "tmdb": 7.9,
+      "imdb": 7.7,
+      "rt": 0,
+      "meta": 91
+    },
+    "file": "Little.Women.2019.2160p.WEB-DL.DDP5.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": false,
+    "tint": "#d29f87",
+    "mood": "light",
+    "logo": true
+  },
+  {
+    "id": "oppenheimer",
+    "tmdb": 872585,
+    "title": {
+      "tr": "Oppenheimer",
+      "en": "Oppenheimer"
+    },
+    "year": 2023,
+    "minutes": 181,
+    "genres": [
+      {
+        "tr": "Dram",
+        "en": "Drama"
+      },
+      {
+        "tr": "Tarih",
+        "en": "History"
+      }
+    ],
+    "summary": {
+      "tr": "İkinci Dünya Savaşı sırasında atom bombasının geliştirilmesine liderlik eden Amerikalı fizikçi J. Robert Oppenheimer'ın hikayesi. Manhattan Projesi'nin başına geçen Oppenheimer, insanlık tarihini değiştirecek bu ölümcül icadı hayata geçirirken, yarattığı gücün doğuracağı vicdani ve siyasi sonuçlarla da yüzleşmek zorunda kalır.",
+      "en": "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II."
+    },
+    "director": "Christopher Nolan",
+    "cast": [
+      "Cillian Murphy",
+      "Emily Blunt",
+      "Matt Damon"
+    ],
+    "scores": {
+      "tmdb": 8,
+      "imdb": 8.2,
+      "rt": 0,
+      "meta": 90
+    },
+    "file": "Oppenheimer.2023.2160p.BluRay.DTS-HD.MA.5.1.H265.mkv",
+    "uhd": true,
+    "hdr": true,
+    "subtitles": true,
+    "tint": "#d28134",
+    "mood": "dark",
+    "logo": true
+  }
+]

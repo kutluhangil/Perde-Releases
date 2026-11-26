@@ -1,0 +1,85 @@
+---
+import '../styles/base.css';
+import { t, otherLang, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang);
+const site = Astro.site!.origin;
+const url = `${site}/${lang}/`;
+---
+
+<!doctype html>
+<html lang={lang} data-lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{d.meta.title}</title>
+    <meta name="description" content={d.meta.description} />
+    <link rel="canonical" href={url} />
+    <link rel="alternate" hreflang="tr" href={`${site}/tr/`} />
+    <link rel="alternate" hreflang="en" href={`${site}/en/`} />
+    <link rel="alternate" hreflang="x-default" href={`${site}/`} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f4f4f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0c" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Perde" />
+    <meta property="og:title" content={d.meta.title} />
+    <meta property="og:description" content={d.meta.description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:locale" content={d.locale.replace('-', '_')} />
+    <meta property="og:locale:alternate" content={t(otherLang(lang)).locale.replace('-', '_')} />
+    <meta property="og:image" content={`${site}/og/${lang}.jpg`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'Perde',
+        description: d.meta.description,
+        applicationCategory: 'MultimediaApplication',
+        operatingSystem: 'macOS 26, Windows 11, Linux',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        downloadUrl: 'https://github.com/kutluhangil/Perde-Releases/releases/latest',
+        inLanguage: [lang],
+        author: { '@type': 'Person', name: 'Kutluhan Gül', url: 'https://github.com/kutluhangil' },
+        url,
+        image: `${site}/og/${lang}.jpg`,
+      })}
+    />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        let theme = null;
+        try { theme = localStorage.getItem('perde-theme'); } catch {}
+        if (theme === 'light' || theme === 'dark') root.dataset.theme = theme;
+        else root.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (navigator.userAgentData?.brands?.some((b) => b.brand === 'Chromium')) root.classList.add('refract');
+        root.classList.add('js');
+        let seen = false;
+        try { seen = sessionStorage.getItem('perde-curtain') === '1'; } catch {}
+        if (!seen && !matchMedia('(prefers-reduced-motion: reduce)').matches) root.classList.add('play-curtain');
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">{d.nav.skip}</a>
+    <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+      <filter id="lg-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="2" result="soft" />
+        <feDisplacementMap in="SourceGraphic" in2="soft" scale="38" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+    <slot />
+  </body>
+</html>

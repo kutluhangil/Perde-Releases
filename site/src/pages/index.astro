@@ -1,0 +1,32 @@
+---
+// Kök: tarayıcı diline göre /tr/ ya da /en/. JS yoksa iki bağlantı görünür.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Perde</title>
+    <meta name="robots" content="noindex" />
+    <link rel="alternate" hreflang="tr" href="https://perde.kutluhangil.dev/tr/" />
+    <link rel="alternate" hreflang="en" href="https://perde.kutluhangil.dev/en/" />
+    <script is:inline>
+      (() => {
+        let pick = null;
+        try { pick = localStorage.getItem('perde-lang'); } catch {}
+        const lang = pick || ((navigator.languages || [navigator.language]).some((l) => l.toLowerCase().startsWith('tr')) ? 'tr' : 'en');
+        location.replace(`/${lang}/${location.hash}`);
+      })();
+    </script>
+    <style>
+      html { color-scheme: light dark; font-family: system-ui, sans-serif; background: #0a0a0c; color: #f5f5f7; }
+      body { min-height: 100dvh; display: grid; place-content: center; gap: 16px; text-align: center; }
+      a { color: inherit; font-size: 1.25rem; }
+    </style>
+  </head>
+  <body>
+    <a href="/tr/">Türkçe</a>
+    <a href="/en/">English</a>
+  </body>
+</html>

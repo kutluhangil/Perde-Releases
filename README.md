@@ -12,6 +12,8 @@
 *A free app that turns a folder of films into an Apple TV style library.*<br>
 *Posters, summaries, ratings and Turkish subtitles arrive by themselves; nothing is locked, no account, no tracking.*
 
+**[perde.kutluhangil.dev](https://perde.kutluhangil.dev)** · take the live tour, in English and Turkish
+
 <br>
 
 <img src="docs/screenshots/1-home.png" width="92%" alt="Perde home screen on Linux: glass sidebar, film hero, recently added row">
@@ -113,7 +115,7 @@ to the exact file by its hash.
 
 ## Türkçe özet
 
-Perde, diskindeki film klasörünü Apple TV benzeri bir kütüphaneye çeviren ücretsiz bir uygulama. Afişler, özetler,
+Perde, diskindeki film klasörünü Apple TV benzeri bir kütüphaneye çeviren ücretsiz bir uygulama. Canlı tur ve ayrıntılar: [perde.kutluhangil.dev](https://perde.kutluhangil.dev/tr/). Afişler, özetler,
 puanlar ve Türkçe altyazılar kendiliğinden gelir; hesap, abonelik ya da takip yok. Kurulum dosyaları yukarıdaki
 **Download** tablosunda ve [Releases](https://github.com/kutluhangil/Perde-Releases/releases/latest) sayfasında:
 Mac için DMG, Linux için AppImage ve .deb, Windows yakında. Yeni sürüm çıkınca uygulama haber verir;

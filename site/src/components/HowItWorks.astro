@@ -1,0 +1,582 @@
+---
+// Nasıl çalışır: dört adım, her birinin yanında uygulamadan bir parça. İlk adım canlıdır: dosya adı yazılır, çözülür.
+import { Image } from 'astro:assets';
+import { films } from '../data/films';
+import { posters } from '../data/posters';
+import { t, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang);
+const h = d.how;
+const lead = films[0];
+const budapest = films[5];
+const examples = [films[0].file, films[8].file, films[3].file, `${budapest.title.en} (${budapest.year}) [1080p] [BluRay] [5.1].mkv`, 'Dark.2017.S01E03.1080p.WEB-DL.DDP5.1.H264.mkv'];
+const library = films.map((f) => ({ id: f.id, year: f.year, names: [f.title.en, f.title.tr, f.file.split('.').slice(0, f.file.split('.').findIndex((p) => /^\d{4}$/.test(p))).join(' ')] }));
+const subHash = '8e245d9679d31e12';
+const tidy = films.slice(0, 3).map((f) => {
+  const base = f.file.replace(/\.(mkv|mp4)$/, '');
+  const m = base.match(/^(.*?\.\d{4})(\..*)$/)!;
+  return { keep: m[1], drop: m[2], clean: `${f.title[lang]} (${f.year})` };
+});
+---
+
+<section class="how section" id="nasil" aria-labelledby="how-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="how-title">{h.heading}</h2>
+      <p>{h.sub}</p>
+    </header>
+
+    <ol class="steps">
+      <li class="step">
+        <div class="copy">
+          <h3>{h.steps[0].title}</h3>
+          <p>{h.steps[0].text}</p>
+        </div>
+        <div class="ui parser" data-ui data-parser data-library={JSON.stringify(library)} data-labels={JSON.stringify(h)}>
+          <label class="field">
+            <span class="visually-hidden">{h.tryLabel}</span>
+            <input type="text" value={lead.file} spellcheck="false" autocomplete="off" data-input aria-describedby="how-hint" />
+          </label>
+          <p class="hint" id="how-hint">{h.tryHint}</p>
+          <div class="chips" data-chips aria-live="polite"></div>
+          <dl class="facts" data-facts></dl>
+          <div class="match" data-match>
+            {
+              films.map((f) => (
+                <figure data-film={f.id} hidden={f.id !== lead.id}>
+                  <Image src={posters[f.id]} alt="" widths={[160, 320]} sizes="120px" loading="lazy" />
+                  <figcaption>
+                    <b>{f.title[lang]}</b>
+                    <span>{f.year} · {h.found}</span>
+                  </figcaption>
+                </figure>
+              ))
+            }
+            <figure data-film="none" hidden>
+              <span class="blank" aria-hidden="true"></span>
+              <figcaption><b data-search-title></b><span>{h.search}</span></figcaption>
+            </figure>
+          </div>
+          <div class="examples" role="group" aria-label={h.examples}>
+            {examples.map((e) => <button type="button" data-example={e}>{e.replace(/\.(mkv|mp4)$/, '')}</button>)}
+          </div>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="copy">
+          <h3>{h.steps[1].title}</h3>
+          <p>{h.steps[1].text}</p>
+        </div>
+        <div class="ui scores" data-ui>
+          <Image src={posters[films[6].id]} alt={films[6].title[lang]} widths={[200, 400]} sizes="160px" loading="lazy" class="poster" />
+          <div class="score-list">
+            <p class="film-title">{films[6].title[lang]} <span>{films[6].year}</span></p>
+            <p class="cast">{films[6].director} · {films[6].cast.slice(0, 2).join(', ')}</p>
+            <ul>
+              <li><i class="tmdb">TMDB</i>{films[6].scores.tmdb.toFixed(1)}</li>
+              <li><i class="imdb">IMDb</i>{films[6].scores.imdb.toFixed(1)}</li>
+              {films[6].scores.rt > 0 && <li><i class="rt">RT</i>{films[6].scores.rt}%</li>}
+              <li><i class="mc">MC</i>{films[6].scores.meta}</li>
+            </ul>
+            <p class="summary">{films[6].summary[lang]}</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="copy">
+          <h3>{h.steps[2].title}</h3>
+          <p>{h.steps[2].text}</p>
+        </div>
+        <div class="ui subs" data-ui>
+          <p class="file">{films[2].file}</p>
+          <p class="hash"><span>{h.hashLabel}</span><code>{subHash}</code></p>
+          <ul>
+            <li class="hit"><b>{h.subLang}</b><span>OpenSubtitles · {h.matched}</span><svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg></li>
+            <li><b>English</b><span>OpenSubtitles</span></li>
+            <li><b>Deutsch</b><span>SubDL</span></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="copy">
+          <h3>{h.steps[3].title}</h3>
+          <p>{h.steps[3].text}</p>
+        </div>
+        <div class="ui tidy" data-ui>
+          {
+            tidy.map((row) => (
+              <p class="row">
+                <span class="before">
+                  {row.keep}
+                  <s>{row.drop}</s>
+                </span>
+                <span class="after">{row.clean}</span>
+              </p>
+            ))
+          }
+          <p class="row">
+            <span class="before">Sample.mkv · banner.jpg · info.txt</span>
+            <span class="after">{h.trash}</span>
+          </p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<style>
+  .steps {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: clamp(64px, 9vw, 128px);
+  }
+  .step {
+    display: grid;
+    gap: 28px 64px;
+    align-items: center;
+  }
+  @media (min-width: 960px) {
+    .step {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    }
+  }
+  .copy {
+    display: grid;
+    gap: 14px;
+    max-width: 44ch;
+  }
+  .copy h3 {
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+    letter-spacing: -0.02em;
+  }
+  .copy p {
+    color: var(--ink-2);
+  }
+
+  /* Uygulama parçaları: her temada uygulamanın karanlık yüzeyi */
+  .ui {
+    --u-bg: #141417;
+    --u-elev: #1c1c1e;
+    --u-ink: #f5f5f7;
+    --u-ink-2: rgb(235 235 245 / 0.64);
+    --u-ink-3: rgb(235 235 245 / 0.38);
+    position: relative;
+    border-radius: 22px;
+    background: var(--u-bg);
+    color: var(--u-ink);
+    padding: clamp(20px, 3vw, 32px);
+    box-shadow: 0 0 0 0.5px rgb(255 255 255 / 0.1);
+    font-size: 0.9375rem;
+  }
+
+  /* 1 · ayrıştırıcı */
+  .parser {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .field,
+  .hint,
+  .chips,
+  .examples {
+    grid-column: 1 / -1;
+  }
+  .field input {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 0;
+    background: var(--u-elev);
+    color: var(--u-ink);
+    font-size: 1rem;
+    box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.14);
+  }
+  .field input:focus {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+  .hint {
+    color: var(--u-ink-3);
+    font-size: 0.875rem;
+    margin-top: -6px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 34px;
+  }
+  .chips :global(span) {
+    padding: 5px 10px;
+    border-radius: 9px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    background: rgb(255 255 255 / 0.08);
+    color: var(--u-ink-2);
+    animation: chip-in 0.45s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 40ms);
+  }
+  .chips :global([data-kind='title']) {
+    background: #f5f5f7;
+    color: #111;
+  }
+  .chips :global([data-kind='year']) {
+    background: var(--amber);
+    color: var(--amber-ink);
+  }
+  .chips :global([data-kind='episode']) {
+    background: #64d2ff;
+    color: #04222e;
+  }
+  .chips :global([data-kind='resolution']),
+  .chips :global([data-kind='source']),
+  .chips :global([data-kind='codec']),
+  .chips :global([data-kind='audio']) {
+    background: rgb(255 255 255 / 0.16);
+    color: var(--u-ink);
+  }
+  .chips :global([data-kind='other']) {
+    background: transparent;
+    color: var(--u-ink-3);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  }
+  @keyframes chip-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.96);
+    }
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px 16px;
+    align-content: start;
+  }
+  .facts :global(div) {
+    display: grid;
+    gap: 2px;
+  }
+  .facts :global(dt) {
+    font-size: 0.75rem;
+    color: var(--u-ink-3);
+  }
+  .facts :global(dd) {
+    margin: 0;
+    font-weight: 600;
+  }
+  .match figure[hidden] {
+    display: none;
+  }
+  .match figure {
+    display: grid;
+    gap: 8px;
+    width: 120px;
+    margin: 0;
+    animation: poster-in 0.6s var(--ease-out) both;
+  }
+  .match img,
+  .blank {
+    display: block;
+    width: 120px;
+    aspect-ratio: 2 / 3;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.8);
+  }
+  .blank {
+    background: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.06) 0 8px, rgb(255 255 255 / 0.03) 8px 16px);
+  }
+  .match figcaption {
+    display: grid;
+    gap: 2px;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+  }
+  .match figcaption span {
+    color: var(--u-ink-3);
+  }
+  @keyframes poster-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px) rotate(-3deg) scale(0.92);
+    }
+  }
+  .examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .examples button {
+    max-width: 100%;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.07);
+    color: var(--u-ink-2);
+    font-size: 0.8125rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background-color 0.2s var(--ease);
+  }
+  .examples button:hover {
+    background: rgb(255 255 255 / 0.14);
+    color: var(--u-ink);
+  }
+
+  /* 2 · afiş ve puanlar */
+  .scores {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+  .scores .poster {
+    width: 140px;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 24px 50px -20px rgb(0 0 0 / 0.9);
+  }
+  .film-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .film-title span {
+    font-weight: 500;
+    color: var(--u-ink-3);
+  }
+  .cast {
+    color: var(--u-ink-2);
+    font-size: 0.875rem;
+    margin-top: 4px;
+  }
+  .score-list ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 14px 0;
+  }
+  .score-list li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 6px;
+    border-radius: 9px;
+    background: rgb(255 255 255 / 0.07);
+    font-weight: 650;
+  }
+  .score-list i {
+    font-style: normal;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 5px;
+  }
+  .tmdb {
+    background: #01b4e4;
+    color: #062a33;
+  }
+  .imdb {
+    background: #f5c518;
+    color: #111;
+  }
+  .rt {
+    background: #fa320a;
+    color: #fff;
+  }
+  .mc {
+    background: #ffcc34;
+    color: #111;
+  }
+  .summary {
+    color: var(--u-ink-2);
+    font-size: 0.9375rem;
+  }
+  @media (max-width: 520px) {
+    .scores {
+      grid-template-columns: 96px minmax(0, 1fr);
+    }
+    .scores .poster {
+      width: 96px;
+    }
+  }
+
+  /* 3 · altyazı */
+  .subs .file {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .hash {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    margin: 8px 0 18px;
+    color: var(--u-ink-3);
+    font-size: 0.875rem;
+  }
+  .hash code {
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--u-ink-2);
+  }
+  .subs ul {
+    list-style: none;
+    padding: 0;
+    border-radius: 14px;
+    background: var(--u-elev);
+    overflow: hidden;
+  }
+  .subs li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--u-ink-2);
+  }
+  .subs li + li {
+    box-shadow: inset 0 0.5px 0 rgb(255 255 255 / 0.09);
+  }
+  .subs li b {
+    min-width: 76px;
+    color: var(--u-ink);
+  }
+  .subs li span {
+    font-size: 0.875rem;
+  }
+  .subs .hit {
+    background: rgb(48 209 88 / 0.12);
+  }
+  .subs .ok {
+    margin-left: auto;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #30d158;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* 4 · klasör düzeni */
+  .tidy {
+    display: grid;
+    gap: 2px;
+    padding: 8px;
+  }
+  .tidy .row {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 12px;
+  }
+  .tidy .row:nth-child(odd) {
+    background: rgb(255 255 255 / 0.04);
+  }
+  .before {
+    color: var(--u-ink-2);
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+  }
+  .before s {
+    color: #ff6b5e;
+    opacity: 0.75;
+  }
+  .after {
+    font-weight: 650;
+  }
+  .after::before {
+    content: '→ ';
+    color: var(--u-ink-3);
+    font-weight: 400;
+  }
+</style>
+
+<script>
+  import { classifyTokens, parseReleaseName } from '../lib/release-name';
+
+  const root = document.querySelector<HTMLElement>('[data-parser]');
+  if (root) {
+    const input = root.querySelector<HTMLInputElement>('[data-input]')!;
+    const chips = root.querySelector<HTMLElement>('[data-chips]')!;
+    const facts = root.querySelector<HTMLElement>('[data-facts]')!;
+    const figures = [...root.querySelectorAll<HTMLElement>('[data-film]')];
+    const searchTitle = root.querySelector<HTMLElement>('[data-search-title]')!;
+    const library = JSON.parse(root.dataset.library!) as { id: string; year: number; names: string[] }[];
+    const labels = JSON.parse(root.dataset.labels!) as { fields: Record<string, string>; unknown: string };
+    const norm = (s: string) => s.toLocaleLowerCase('tr').normalize('NFKD').replace(/[^\p{L}\p{N} ]/gu, '').replace(/ı/g, 'i');
+
+    const render = () => {
+      const value = input.value.trim();
+      const tokens = value ? classifyTokens(value) : [];
+      chips.replaceChildren(
+        ...tokens.map((tok, i) => {
+          const s = document.createElement('span');
+          s.textContent = tok.text;
+          s.dataset.kind = tok.kind;
+          s.style.setProperty('--i', String(i));
+          if (tok.kind === 'other') s.title = labels.unknown;
+          return s;
+        }),
+      );
+      const info = value ? parseReleaseName(value) : null;
+      const rows: [string, string | undefined][] = info
+        ? [
+            [labels.fields.title, info.title],
+            [labels.fields.year, info.year?.toString()],
+            [labels.fields.season, info.season?.toString()],
+            [labels.fields.episode, info.episode?.toString()],
+            [labels.fields.resolution, info.resolution === '2160p' ? '4K · 2160p' : info.resolution],
+            [labels.fields.source, info.source],
+            [labels.fields.codec, info.videoCodec],
+            [labels.fields.audio, [info.audioCodec, info.audioChannels].filter(Boolean).join(' ') || undefined],
+          ]
+        : [];
+      facts.replaceChildren(
+        ...rows
+          .filter(([, v]) => v)
+          .map(([k, v]) => {
+            const div = document.createElement('div');
+            const dt = document.createElement('dt');
+            const dd = document.createElement('dd');
+            dt.textContent = k;
+            dd.textContent = v!;
+            div.append(dt, dd);
+            return div;
+          }),
+      );
+      const hit = info && library.find((f) => f.names.some((n) => norm(n) === norm(info.title)) && (!info.year || f.year === info.year));
+      figures.forEach((fig) => {
+        const show = hit ? fig.dataset.film === hit.id : fig.dataset.film === 'none' && Boolean(info);
+        if (show && fig.hidden) {
+          fig.hidden = false;
+          fig.style.animation = 'none';
+          void fig.offsetWidth;
+          fig.style.animation = '';
+        } else if (!show) fig.hidden = true;
+      });
+      if (info && !hit) searchTitle.textContent = info.year ? `${info.title} (${info.year})` : info.title;
+    };
+
+    input.addEventListener('input', render);
+    root.querySelectorAll<HTMLButtonElement>('[data-example]').forEach((b) =>
+      b.addEventListener('click', () => {
+        input.value = b.dataset.example!;
+        render();
+      }),
+    );
+    render();
+  }
+</script>

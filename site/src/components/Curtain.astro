@@ -1,0 +1,137 @@
+---
+// Açılış perdesi: uygulamanın açılışının kısa web hâli (sinema sözü turun Açılış bölümünde). Oturumda bir kez, hareket azaltılmışsa hiç oynamaz.
+// html.play-curtain sınıfını Base.astro'daki satır içi betik ilk boyamadan önce ekler.
+const letters = ['P', 'E', 'R', 'D', 'E'];
+---
+
+<div class="curtain" data-curtain aria-hidden="true">
+  <div class="half left"></div>
+  <div class="half right"></div>
+  <div class="mark">
+    <p class="word">{letters.map((l, i) => <span style={`--i:${i}`}>{l}</span>)}</p>
+    <span class="beam"></span>
+  </div>
+</div>
+
+<style>
+  .curtain {
+    display: none;
+  }
+  :global(:root.play-curtain) .curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  :global(:root.play-curtain) body {
+    overflow: hidden;
+  }
+  .half {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50.5%;
+    background-color: #0a0a0c;
+    /* kadife kıvrımları */
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0) 0 38px,
+      rgb(255 255 255 / 0.025) 52px,
+      rgb(0 0 0 / 0.25) 70px,
+      rgb(255 255 255 / 0) 84px
+    );
+    transition: transform 0.85s cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  .left {
+    left: 0;
+  }
+  .right {
+    right: 0;
+  }
+  .mark {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 22px;
+    color: #f5f5f7;
+    transition:
+      opacity 0.5s var(--ease),
+      transform 0.9s var(--ease-out);
+  }
+  .word {
+    display: flex;
+    gap: 0.3em;
+    font-family: var(--font-brand);
+    font-size: clamp(3.5rem, 11vw, 9rem);
+    font-weight: 500;
+    line-height: 1;
+  }
+  .word span {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(0.12em);
+    animation: letter 0.6s var(--ease-out) forwards;
+    animation-delay: calc(var(--i) * 0.05s);
+  }
+  .beam {
+    width: min(70vw, 620px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--amber), #fff6e0, var(--amber), transparent);
+    box-shadow: 0 0 18px 2px rgb(232 176 74 / 0.55);
+    transform: scaleX(0);
+    animation: beam 0.5s var(--ease-out) 0.2s forwards;
+  }
+  .curtain[data-open] .left {
+    transform: translateX(-101%);
+  }
+  .curtain[data-open] .right {
+    transform: translateX(101%);
+  }
+  .curtain[data-open] .mark {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  @keyframes letter {
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: none;
+    }
+  }
+  @keyframes beam {
+    to {
+      transform: scaleX(1);
+    }
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const curtain = document.querySelector<HTMLElement>('[data-curtain]');
+  if (curtain && root.classList.contains('play-curtain')) {
+    let done = false;
+    const open = () => {
+      if (done) return;
+      done = true;
+      try {
+        sessionStorage.setItem('perde-curtain', '1');
+      } catch {}
+      curtain.dataset.open = '';
+      root.classList.add('curtain-opening');
+      document.dispatchEvent(new CustomEvent('perde:curtain-open'));
+      setTimeout(() => {
+        root.classList.remove('play-curtain', 'curtain-opening');
+        curtain.remove();
+      }, 900);
+    };
+    const timer = setTimeout(open, 600);
+    const skip = () => {
+      clearTimeout(timer);
+      open();
+    };
+    curtain.addEventListener('click', skip);
+    addEventListener('keydown', skip, { once: true });
+  }
+</script>

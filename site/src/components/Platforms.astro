@@ -1,0 +1,148 @@
+---
+// Platformlar ve indirme: her sistem bir satır, dosyalar sabit adlı Releases bağlantıları.
+import Icon from './Icon.astro';
+import { t, type Lang } from '../i18n';
+import { downloadUrl, releasesPage, type Release } from '../data/release';
+
+interface Props {
+  lang: Lang;
+  release: Release;
+}
+const { lang, release } = Astro.props;
+const d = t(lang).platforms;
+const size = (file: string) => {
+  const bytes = release.assets[file];
+  return bytes ? `${(bytes / 1048576).toFixed(0)} MB` : '';
+};
+const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(release.date));
+---
+
+<section class="platforms section" id="indir" aria-labelledby="platforms-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="platforms-title">{d.heading}</h2>
+      <p>{d.sub}</p>
+    </header>
+
+    <ul class="rows">
+      {
+        d.rows.map((row) => (
+          <li class="row" data-row={row.id}>
+            <h3 class="os">{row.name}</h3>
+            <div class="info">
+              <p class="req">{row.req}</p>
+              <div class="files">
+                {row.files.length ? (
+                  row.files.map((f, i) => (
+                    <a class:list={[i === 0 ? 'btn-download' : 'glass glass-btn file']} href={downloadUrl(f.file)} download>
+                      {i === 0 && <Icon name="download" />}
+                      <span>{f.label}</span>
+                      {size(f.file) && <small>{size(f.file)}</small>}
+                    </a>
+                  ))
+                ) : (
+                  <span class="soon">{d.soon}</span>
+                )}
+              </div>
+              <p class="tip">{row.tip}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="foot">
+      <p>{d.updates}</p>
+      <p class="ver">
+        {d.version} {release.version} · {d.released} {date} ·
+        <a href={releasesPage}>{d.all}<Icon name="arrow-up-right" size={16} /></a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rows {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: clamp(40px, 6vw, 72px);
+  }
+  .row {
+    display: grid;
+    gap: 16px 56px;
+    align-items: start;
+  }
+  @media (min-width: 960px) {
+    .row {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+  .os {
+    font-size: clamp(3.5rem, 2rem + 7vw, 8.5rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+    transition: color 0.4s var(--ease);
+  }
+  .row:hover .os {
+    color: var(--amber);
+  }
+  :global(:root[data-theme='light']) .row:hover .os {
+    color: #b9801a;
+  }
+  .info {
+    display: grid;
+    gap: 14px;
+  }
+  .req {
+    font-weight: 600;
+    font-size: 1.0625rem;
+  }
+  .files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .files small {
+    font-weight: 500;
+    opacity: 0.7;
+  }
+  .file {
+    display: inline-flex;
+    gap: 8px;
+    min-height: 52px;
+    padding-inline: 18px;
+  }
+  .soon {
+    display: inline-grid;
+    place-items: center;
+    min-height: 52px;
+    padding: 0 22px;
+    border-radius: 999px;
+    background: var(--bg-2);
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .tip {
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+  .foot {
+    display: grid;
+    gap: 8px;
+    margin-top: clamp(48px, 7vw, 88px);
+    font-size: 1.0625rem;
+  }
+  .ver {
+    color: var(--ink-2);
+  }
+  .ver a {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+</style>

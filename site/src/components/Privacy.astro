@@ -1,0 +1,142 @@
+---
+// Gizlilik: neyin nereye gittiği, akış çizimiyle.
+import { t, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang).privacy;
+---
+
+<section class="privacy section" id="gizlilik" aria-labelledby="privacy-title">
+  <div class="wrap grid">
+    <header class="head">
+      <h2 id="privacy-title">{d.heading}</h2>
+      <p>{d.sub}</p>
+    </header>
+
+    <figure class="flow" aria-hidden="true">
+      <span class="node you">{d.flow.you}</span>
+      <span class="wire"><i></i></span>
+      <span class="node server">{d.flow.server}<small>perde-keys.kutluhangil.dev</small></span>
+      <span class="wire"><i></i></span>
+      <span class="node services">{d.flow.services}</span>
+    </figure>
+
+    <dl class="points">
+      {
+        d.points.map(([k, v]) => (
+          <div>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    gap: 48px 64px;
+  }
+  @media (min-width: 960px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .points {
+      grid-column: 1 / -1;
+    }
+  }
+  .head {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+  }
+  .head h2 {
+    font-size: var(--step-3);
+  }
+  .head p {
+    font-size: var(--step-1);
+    color: var(--ink-2);
+    max-width: 30ch;
+    line-height: 1.4;
+  }
+  .flow {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+    gap: 0;
+    align-self: center;
+  }
+  .node {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 18px 26px;
+    border-radius: 20px;
+    background: var(--stage);
+    color: var(--stage-ink);
+    font-weight: 650;
+    text-align: center;
+    min-width: min(100%, 300px);
+  }
+  .node small {
+    font-weight: 500;
+    color: var(--stage-ink-2);
+    font-size: 0.8125rem;
+  }
+  .services {
+    background: var(--bg-2);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .wire {
+    position: relative;
+    width: 2px;
+    height: 44px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .wire i {
+    position: absolute;
+    left: 0;
+    width: 2px;
+    height: 14px;
+    border-radius: 2px;
+    background: var(--amber);
+    animation: packet 2.4s var(--ease) infinite;
+  }
+  .wire + .node + .wire i {
+    animation-delay: 1.2s;
+  }
+  @keyframes packet {
+    from {
+      transform: translateY(-14px);
+    }
+    to {
+      transform: translateY(44px);
+    }
+  }
+  .points {
+    display: grid;
+    gap: 28px 40px;
+    margin: 0;
+  }
+  @media (min-width: 720px) {
+    .points {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .points dt {
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: 6px;
+  }
+  .points dd {
+    margin: 0;
+    color: var(--ink-2);
+  }
+</style>

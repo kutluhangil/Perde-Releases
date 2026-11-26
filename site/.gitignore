@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.taste-skill/
+deploy/tunnel.env
+public/tour/img/
+public/tour/films.js
+public/tour/fonts/
+test-results/
+playwright-report/

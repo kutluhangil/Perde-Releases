@@ -1,0 +1,1310 @@
+<!doctype html>
+<html lang="tr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Perde</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<script src="films.js?v=e79742fb"></script>
+<style>
+/* Perde sitesinin canlı turu: uygulamanın penceresi (iframe içinde). Ana sayfa bölümleri postMessage ile yönetir.
+   Kaynak: docs/mockups/03-son-hal.html prototipi; filmler public/tour/films.js (src/data/films.ts). */
+@property --a1{syntax:'<color>';inherits:true;initial-value:#1b2233}
+@property --a2{syntax:'<color>';inherits:true;initial-value:#0c0d14}
+:root{
+  --ink:#f5f5f7; --ink-2:rgba(235,235,245,.62); --ink-3:rgba(235,235,245,.34);
+  --stage:#030305; --win:#0a0a0c; --elev:#1c1c1e; --elev-2:#2c2c2e; --hair:rgba(255,255,255,.09);
+  --glass:rgba(38,38,44,.52); --glass-hi:rgba(255,255,255,.14);
+  --live:#30d158;
+  --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,Arial,sans-serif;
+  --f-cin:"Cinzel","Trajan Pro",Georgia,serif; --f-ant:"Anton",Impact,"Arial Narrow",sans-serif;
+  --f-dms:"DM Serif Display",Georgia,serif; --f-syn:"Syne","Avenir Next",sans-serif; --f-ita:"Italiana","Didot",Georgia,serif; --f-brand:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --spring:cubic-bezier(.2,.8,.2,1); --ease:cubic-bezier(.28,.11,.32,1);
+  --sbw:228px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:transparent;overflow:hidden}
+body{color:var(--ink);font-family:var(--f-ui);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid rgba(255,255,255,.85);outline-offset:2px;border-radius:8px}
+.ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic.f{fill:currentColor;stroke:none}
+
+/* ---------- window ---------- */
+.win{position:relative;width:100%;height:100vh;border-radius:var(--win-r,16px);overflow:hidden;background:var(--win);
+  transition:--a1 1.4s var(--ease),--a2 1.4s var(--ease);isolation:isolate}
+.amb{position:absolute;inset:0;z-index:0;background:
+  radial-gradient(110% 70% at 75% -10%,color-mix(in srgb,var(--a1) 34%,transparent),transparent 60%),
+  radial-gradient(80% 60% at 0% 110%,color-mix(in srgb,var(--a2) 70%,transparent),transparent 65%),var(--win)}
+.content{position:absolute;inset:0;z-index:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain}
+.content::-webkit-scrollbar{display:none}
+.view{min-height:100%;animation:viewIn .5s var(--spring) both}
+@keyframes viewIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.pad{padding-left:calc(var(--sbw) + 34px);padding-right:28px}
+.edge{position:absolute;inset:0 0 auto 0;height:78px;z-index:3;pointer-events:none;opacity:0;transition:opacity .3s;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:linear-gradient(rgba(10,10,12,.55),transparent);
+  -webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
+.edge.on{opacity:1}
+
+/* glass */
+.glass{background:var(--glass);backdrop-filter:blur(30px) saturate(170%);-webkit-backdrop-filter:blur(30px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 0 0 .5px rgba(255,255,255,.12),0 10px 40px -12px rgba(0,0,0,.6)}
+
+/* sidebar */
+.side{position:absolute;z-index:5;left:10px;top:10px;bottom:10px;width:var(--sbw);border-radius:20px;padding:16px 10px 12px;display:flex;flex-direction:column;gap:2px;transition:transform .45s var(--spring),opacity .3s}
+.lights{display:flex;gap:8px;padding:0 6px 16px}
+.lights i{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.25)}
+.lights i:nth-child(1){background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.search{display:flex;align-items:center;gap:8px;margin:0 2px 12px;padding:0 10px;height:32px;border-radius:10px;background:rgba(255,255,255,.07);color:var(--ink-3)}
+.search input{all:unset;flex:1;min-width:0;font-size:13px;color:var(--ink)}
+.search input::placeholder{color:var(--ink-3)}
+.search .ic{width:15px;height:15px}
+.grp{font-size:11px;font-weight:600;color:var(--ink-3);padding:14px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;padding:0 10px;height:32px;border-radius:9px;font-size:13px;color:rgba(235,235,245,.86);transition:background .2s;text-align:left;width:100%}
+.nav .ic{width:17px;height:17px;color:var(--ink-2)}
+.nav em{margin-left:auto;font-style:normal;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.nav:hover{background:rgba(255,255,255,.06)}
+.nav.on{background:var(--glass-hi);color:#fff}.nav.on .ic{color:#fff}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--live);margin-left:auto;box-shadow:0 0 8px var(--live)}
+.side .sp{flex:1}
+.disk{margin:6px 4px 4px;padding:10px;border-radius:12px;background:rgba(255,255,255,.05);font-size:11px;color:var(--ink-3);display:flex;flex-direction:column;gap:7px}
+.disk b{font-size:12px;color:var(--ink-2);font-weight:600}
+.meter{display:flex;height:4px;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.08)}
+.meter i:nth-child(1){width:71.3%;background:rgba(255,255,255,.75)}.meter i:nth-child(2){width:28.7%;background:rgba(255,255,255,.3)}
+
+/* toolbar */
+.bar{position:absolute;z-index:4;top:14px;left:calc(var(--sbw) + 24px);right:14px;height:38px;display:flex;align-items:center;gap:12px;pointer-events:none}
+.bar > *{pointer-events:auto}
+.circ{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;transition:transform .2s var(--spring),opacity .3s}
+.circ:active{transform:scale(.92)}
+.bar .title{font-size:13px;font-weight:600;opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s var(--spring)}
+.bar .title.on{opacity:1;transform:none}
+.bar .grow{flex:1;pointer-events:none}
+.pill{height:38px;border-radius:999px;display:flex;align-items:center;padding:0 4px}
+.pill button{width:34px;height:30px;border-radius:999px;display:grid;place-items:center;color:var(--ink-2);transition:background .2s,color .2s}
+.pill button:hover{background:rgba(255,255,255,.1);color:#fff}
+#back{opacity:0;pointer-events:none;transform:translateX(-6px)}
+#back.on{opacity:1;pointer-events:auto;transform:none}
+#sbtoggle{display:none}
+
+/* ---------- home ---------- */
+.hero{position:relative;height:calc(var(--wh,720px)*.76);min-height:420px;overflow:hidden}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 1s var(--ease)}
+.slide.on{opacity:1}
+.slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.08);transition:transform 9s linear}
+.slide.on img{transform:scale(1)}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  linear-gradient(90deg,rgba(6,6,8,.82) 0%,rgba(6,6,8,.5) 34%,transparent 62%),
+  linear-gradient(0deg,var(--win) 0%,rgba(10,10,12,.6) 18%,transparent 48%)}
+.hinfo{position:absolute;z-index:2;left:calc(var(--sbw) + 44px);bottom:64px;max-width:520px;display:flex;flex-direction:column;gap:14px}
+.hinfo > *{animation:rise .7s var(--spring) both}
+.hinfo > *:nth-child(2){animation-delay:.07s}.hinfo > *:nth-child(3){animation-delay:.13s}.hinfo > *:nth-child(4){animation-delay:.19s}.hinfo > *:nth-child(5){animation-delay:.25s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.eyeb{font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--ink-2);display:flex;align-items:center;gap:8px}
+.logo{margin:0;color:#fff;line-height:.95;text-wrap:balance;text-shadow:0 4px 30px rgba(0,0,0,.45)}
+.logo.cin{font-family:var(--f-cin);font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.logo.ant{font-family:var(--f-ant);text-transform:uppercase;letter-spacing:.01em}
+.logo.dms{font-family:var(--f-dms);letter-spacing:-.01em}
+.logo.syn{font-family:var(--f-syn);font-weight:800;text-transform:uppercase;letter-spacing:.02em}
+.logo.ita{font-family:var(--f-ita);text-transform:uppercase;letter-spacing:.16em}
+.hinfo .logo{font-size:clamp(34px,5vw,64px)}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;color:var(--ink-2)}
+.meta .q{font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 6px;border-radius:5px;border:1px solid rgba(255,255,255,.35);color:#fff}
+.ov{margin:0;font-size:14px;line-height:1.5;color:rgba(235,235,245,.8);max-width:58ch;text-wrap:pretty}
+.acts{display:flex;align-items:center;gap:10px}
+.play{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 22px 0 18px;border-radius:999px;background:#fff;color:#000;font-size:14px;font-weight:600;transition:transform .2s var(--spring),opacity .2s}
+.play:hover{transform:scale(1.03)}.play:active{transform:scale(.96);opacity:.85}
+.play .ic{width:15px;height:15px}
+.gbtn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;transition:transform .2s var(--spring),background .2s}
+.gbtn:hover{transform:scale(1.06)}.gbtn:active{transform:scale(.92)}
+.gbtn.on{background:rgba(255,255,255,.9);color:#000}
+.dots{position:absolute;z-index:2;right:30px;bottom:30px;display:flex;gap:6px}
+.dots button{width:8px;height:8px;border-radius:999px;background:rgba(255,255,255,.3);overflow:hidden;position:relative;transition:width .45s var(--spring)}
+.dots button.on{width:34px}
+.dots button.on::after{content:"";position:absolute;inset:0;background:#fff;transform-origin:left;animation:fillx var(--dur,8s) linear forwards}
+.hero.paused .dots button.on::after{animation-play-state:paused}
+@keyframes fillx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.row{display:flex;flex-direction:column;gap:12px;margin-top:26px;position:relative}
+.hero + .row{margin-top:-18px}
+.rh{display:flex;align-items:baseline;gap:10px}
+.rh h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.rh span{font-size:12px;color:var(--ink-3)}
+.rail{display:flex;gap:16px;overflow-x:auto;overflow-y:visible;padding:8px 28px 18px calc(var(--sbw) + 34px);margin:-8px 0 -18px;scroll-snap-type:x mandatory;scroll-padding-left:calc(var(--sbw) + 34px);scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail > *{scroll-snap-align:start}
+.rnav{position:absolute;top:50%;z-index:2;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;opacity:0;transition:opacity .25s,transform .2s var(--spring)}
+.row:hover .rnav{opacity:1}
+.rnav.l{left:calc(var(--sbw) + 22px)}.rnav.r{right:14px}
+
+/* poster card */
+.pc{flex:0 0 148px;display:flex;flex-direction:column;gap:8px;text-align:left;perspective:700px}
+.pimg{position:relative;aspect-ratio:2/3;max-width:100%;border-radius:12px;overflow:hidden;background:var(--g,#222);transform-style:preserve-3d;
+  transition:transform .5s var(--spring),box-shadow .5s var(--spring);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 8px 20px -10px rgba(0,0,0,.7)}
+.pimg img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .6s}
+.pimg img.ld{opacity:1}
+.shine{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(160px circle at var(--mx,50%) var(--my,30%),rgba(255,255,255,.28),transparent 60%);mix-blend-mode:soft-light}
+.pc:hover .pimg,.pc:focus-visible .pimg{box-shadow:0 0 0 .5px rgba(255,255,255,.2) inset,0 22px 40px -14px color-mix(in srgb,var(--c,#000) 70%,#000)}
+.pc:hover .shine{opacity:1}
+.chips{position:absolute;left:8px;bottom:8px;display:flex;gap:4px}
+.chip{font-size:9px;font-weight:700;letter-spacing:.04em;padding:3px 6px;border-radius:6px;background:rgba(0,0,0,.42);color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18)}
+.seen{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.92);color:#000}
+.seen .ic{width:12px;height:12px;stroke-width:2.6}
+.prog{position:absolute;left:8px;right:8px;bottom:6px;height:3px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}
+.prog i{display:block;height:100%;background:#fff}
+.pt{font-size:13px;font-weight:600;line-height:1.25;color:rgba(245,245,247,.92);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.py{font-size:12px;color:var(--ink-3);margin-top:-6px}
+
+/* continue card */
+.cc{flex:0 0 300px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.cimg{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:var(--g,#222);transition:transform .5s var(--spring)}
+.cimg img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s,transform 1.2s var(--spring)}
+.cimg img.ld{opacity:1}
+.cc:hover .cimg{transform:translateY(-3px)}
+.cc:hover .cimg img{transform:scale(1.05)}
+.cimg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.7),transparent 55%)}
+.cplay{position:absolute;z-index:1;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .3s}
+.cplay span{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;transform:scale(.85);transition:transform .4s var(--spring)}
+.cc:hover .cplay{opacity:1}.cc:hover .cplay span{transform:none}
+.cmeta{position:absolute;z-index:1;left:12px;right:12px;bottom:10px;display:flex;flex-direction:column;gap:7px}
+.cmeta b{font-size:14px;font-weight:600}
+.cmeta small{font-size:11px;color:rgba(235,235,245,.7)}
+.cmeta .prog{position:static}
+
+/* collection stack */
+.stack{flex:0 0 260px;height:250px;position:relative;text-align:left}
+.stack .sc{position:absolute;top:6px;width:132px;aspect-ratio:2/3;border-radius:12px;overflow:hidden;box-shadow:0 14px 30px -12px rgba(0,0,0,.8);transition:transform .6s var(--spring);background:#222}
+.stack .sc img{width:100%;height:100%;object-fit:cover}
+.stack .sc:nth-child(1){left:0;transform:rotate(-6deg) translateY(10px);z-index:1}
+.stack .sc:nth-child(2){left:58px;z-index:3}
+.stack .sc:nth-child(3){left:116px;transform:rotate(6deg) translateY(10px);z-index:2}
+.stack:hover .sc:nth-child(1){transform:rotate(-10deg) translate(-18px,4px)}
+.stack:hover .sc:nth-child(3){transform:rotate(10deg) translate(18px,4px)}
+.stack:hover .sc:nth-child(2){transform:translateY(-6px)}
+.stack .sl{position:absolute;left:0;bottom:0;font-size:13px;font-weight:600}
+.stack .sl small{display:block;font-size:12px;font-weight:400;color:var(--ink-3)}
+
+.foot{margin:34px 0 30px;font-size:11px;color:var(--ink-3);display:flex;align-items:center;gap:10px}
+
+/* ---------- grid view ---------- */
+.ghead{padding-top:76px;display:flex;flex-direction:column;gap:16px}
+.ghead h2{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+.ghead p{margin:-10px 0 0;font-size:13px;color:var(--ink-3)}
+.filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.seg{display:inline-flex;padding:2px;border-radius:9px;background:rgba(255,255,255,.07);position:relative}
+.seg button{position:relative;z-index:1;font-size:12px;font-weight:500;padding:5px 14px;border-radius:7px;color:var(--ink-2);transition:color .25s}
+.seg button.on{color:#fff}
+.seg .thumb{position:absolute;z-index:0;top:2px;bottom:2px;border-radius:7px;background:rgba(255,255,255,.16);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .4s var(--spring),width .4s var(--spring)}
+.tog{font-size:12px;font-weight:500;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;transition:background .25s,color .25s}
+.tog.on{background:#fff;color:#000}
+.tog .ic{width:13px;height:13px;stroke-width:2.4}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:26px 18px;padding-top:22px;padding-bottom:40px}
+.grid .pc{flex:none;min-width:0}
+.empty{grid-column:1/-1;padding:40px 0;text-align:center;color:var(--ink-3);font-size:14px}
+
+/* ---------- detail ---------- */
+.dhero{position:relative;height:var(--wh,720px);min-height:480px}
+.dbg{position:absolute;inset:0;overflow:hidden}
+.dbg img{width:100%;height:100%;object-fit:cover;animation:kb 24s ease-out both}
+@keyframes kb{from{transform:scale(1.12)}to{transform:scale(1.0)}}
+.dhero::after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  linear-gradient(90deg,rgba(6,6,8,.86) 0%,rgba(6,6,8,.45) 38%,transparent 66%),
+  linear-gradient(0deg,var(--win) 1%,rgba(10,10,12,.55) 26%,transparent 55%)}
+.dinfo{position:absolute;z-index:2;left:calc(var(--sbw) + 44px);right:30px;bottom:44px;display:flex;flex-direction:column;gap:14px;max-width:640px}
+.dinfo > *{animation:rise .7s var(--spring) both}
+.dinfo > *:nth-child(2){animation-delay:.08s}.dinfo > *:nth-child(3){animation-delay:.14s}.dinfo > *:nth-child(4){animation-delay:.2s}.dinfo > *:nth-child(5){animation-delay:.26s}
+.dinfo .logo{font-size:clamp(36px,5.4vw,72px)}
+.who{font-size:12px;color:var(--ink-3)}
+.who b{color:var(--ink-2);font-weight:500}
+.dsec{display:flex;flex-direction:column;gap:14px;margin-top:30px}
+.dsec h3{margin:0;font-size:17px;font-weight:700}
+.cast{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.cast::-webkit-scrollbar{display:none}
+.person{flex:0 0 86px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.av{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:600;color:rgba(255,255,255,.92);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2),0 8px 18px -8px rgba(0,0,0,.6);transition:transform .4s var(--spring)}
+.person:hover .av{transform:scale(1.06)}
+.person b{font-size:12px;font-weight:600;line-height:1.25}
+.person small{font-size:11px;color:var(--ink-3);margin-top:-6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{border-radius:18px;background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h4{margin:0;font-size:13px;font-weight:600;color:var(--ink-2)}
+.srow{display:flex;align-items:center;gap:12px;min-height:34px;font-size:13px}
+.srow + .srow{border-top:.5px solid var(--hair);padding-top:10px}
+.srow .lang{font-weight:600}.srow small{color:var(--ink-3)}
+.srow .r{margin-left:auto}
+.fetch{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 14px;border-radius:999px;background:#fff;color:#000;font-size:12px;font-weight:600;transition:background .3s,color .3s,width .4s var(--spring)}
+.fetch.busy{background:rgba(255,255,255,.12);color:#fff}
+.fetch.done{background:rgba(48,209,88,.16);color:var(--live)}
+.spin{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(1turn)}}
+.tech{display:flex;flex-wrap:wrap;gap:8px}
+.tech span{font-size:12px;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.fname{font:11px ui-monospace,Menlo,monospace;color:var(--ink-3);overflow-wrap:anywhere}
+
+/* ---------- player ---------- */
+.player{position:absolute;inset:0;z-index:20;background:#000;overflow:hidden;transform-origin:bottom right;
+  transition:transform .6s var(--spring),border-radius .6s var(--spring),box-shadow .6s;animation:pIn .55s var(--spring) both}
+@keyframes pIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.player.pip{transform:translate(-18px,-18px) scale(.3);border-radius:46px;box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 40px 80px rgba(0,0,0,.8)}
+.player.pip .pui{opacity:0;pointer-events:none}
+.player canvas{position:absolute;inset:0;width:100%;height:100%}
+.pui{position:absolute;inset:0;transition:opacity .45s var(--ease)}
+.player.idle{cursor:none}
+.player.idle .pui{opacity:0}
+.ptop{position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:center;gap:12px}
+.ptop b{font-size:14px;font-weight:600;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.ptop small{font-size:12px;color:var(--ink-2)}
+.ptop .grow{flex:1}
+.sub{position:absolute;left:50%;transform:translateX(-50%);bottom:122px;width:86%;text-align:center;font-weight:600;color:#fff;line-height:1.3;transition:bottom .45s var(--ease),opacity .3s;pointer-events:none}
+.player.idle .sub{bottom:46px}
+.sub span{display:inline;padding:2px 8px;border-radius:6px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.sub.s{font-size:18px}.sub.m{font-size:24px}.sub.l{font-size:31px}
+.sub.shadow span{text-shadow:0 0 3px #000,0 2px 10px rgba(0,0,0,.9)}
+.sub.box span{background:rgba(0,0,0,.6)}
+.ctrl{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:min(820px,calc(100% - 32px));border-radius:24px;padding:12px 16px 10px;display:flex;flex-direction:column;gap:8px}
+.scrub{position:relative;height:18px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+.track{position:relative;flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.18);transition:height .2s var(--spring)}
+.scrub:hover .track{height:8px}
+.track .buf{position:absolute;inset:0 auto 0 0;background:rgba(255,255,255,.22);border-radius:3px}
+.track .fill{position:absolute;inset:0 auto 0 0;background:#fff;border-radius:3px}
+.track .ch{position:absolute;top:0;bottom:0;width:2px;background:rgba(0,0,0,.55)}
+.knob{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;transform:translate(-50%,-50%) scale(0);transition:transform .25s var(--spring);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.scrub:hover .knob,.scrub.drag .knob{transform:translate(-50%,-50%) scale(1)}
+.prev{position:absolute;bottom:28px;width:176px;transform:translateX(-50%) translateY(6px);opacity:0;pointer-events:none;transition:opacity .2s,transform .3s var(--spring);display:flex;flex-direction:column;align-items:center;gap:6px}
+.scrub:hover .prev{opacity:1;transform:translateX(-50%)}
+.prev canvas{position:static;width:176px;height:99px;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 10px 30px rgba(0,0,0,.6)}
+.prev span{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;padding:2px 8px;border-radius:6px;background:rgba(0,0,0,.6)}
+.crow{display:flex;align-items:center;gap:2px}
+.crow .t{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:48px}
+.crow .t.r{text-align:right}
+.cb{height:36px;min-width:36px;padding:0 9px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#fff;font-size:12px;font-weight:600;transition:background .2s,transform .2s var(--spring)}
+.cb:hover,.cb.on{background:rgba(255,255,255,.14)}
+.cb:active{transform:scale(.92)}
+.cb.big .ic{width:24px;height:24px}
+.crow .mid{flex:1;display:flex;justify-content:center;gap:6px}
+.hud{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.8);width:84px;height:84px;border-radius:50%;display:grid;place-items:center;opacity:0;pointer-events:none;font-size:13px;font-weight:700}
+.hud.go{animation:hud .7s var(--spring)}
+@keyframes hud{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.08)}}
+.hud .ic{width:30px;height:30px}
+.pop{position:absolute;bottom:118px;width:280px;max-width:calc(100% - 24px);border-radius:20px;padding:10px;display:flex;flex-direction:column;gap:2px;font-size:13px;transform-origin:bottom center;animation:popIn .35s var(--spring) both}
+@keyframes popIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:none}}
+.pop h6{margin:8px 8px 4px;font-size:11px;font-weight:600;color:var(--ink-3)}
+.opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;text-align:left;width:100%}
+.opt:hover{background:rgba(255,255,255,.08)}
+.opt .ck{width:16px;color:#fff;opacity:0}.opt.on .ck{opacity:1}
+.opt small{margin-left:auto;color:var(--ink-3);font-size:12px}
+.step{display:flex;align-items:center;justify-content:space-between;padding:4px 6px}
+.step b{font-variant-numeric:tabular-nums;font-size:13px}
+.step button{width:30px;height:28px;border-radius:9px;background:rgba(255,255,255,.1);font-size:16px}
+.pop .seg{margin:2px 6px 6px;display:flex}.pop .seg button{flex:1}
+
+/* ---------- onboarding ---------- */
+.onb{position:absolute;inset:0;z-index:30;background:#020203;display:grid;place-items:center;overflow:hidden;transition:opacity .7s var(--ease),transform .8s var(--spring)}
+.onb.out{opacity:0;transform:scale(1.06);pointer-events:none}
+.beam{position:absolute;left:50%;top:-30%;width:150%;height:130%;transform:translateX(-50%);pointer-events:none;
+  background:conic-gradient(from 180deg at 50% 0%,transparent 160deg,rgba(255,214,160,.11) 176deg,rgba(255,230,190,.2) 180deg,rgba(255,214,160,.11) 184deg,transparent 200deg);
+  filter:blur(18px);animation:sweep 9s ease-in-out infinite alternate}
+@keyframes sweep{from{transform:translateX(-50%) rotate(-7deg)}to{transform:translateX(-50%) rotate(7deg)}}
+.wall{position:absolute;inset:-20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px;padding:20px;opacity:.5;transform:rotate(-8deg) scale(1.15);pointer-events:none}
+.wall div{aspect-ratio:2/3;border-radius:8px;overflow:hidden;background:#111;filter:blur(10px) grayscale(1) brightness(.25);transition:filter 1.2s var(--ease)}
+.wall div img{width:100%;height:100%;object-fit:cover}
+.wall div.dev{filter:none}
+.ocard{position:relative;z-index:2;width:min(460px,calc(100% - 32px));display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;padding:34px 28px;border-radius:30px}
+.ocard .appicon{width:88px;height:88px;border-radius:21px;animation:iconIn 1s var(--spring) both}
+@keyframes iconIn{from{opacity:0;transform:scale(.6) translateY(10px)}to{opacity:1;transform:none}}
+.ocard h2{margin:0;font-family:var(--f-brand);font-weight:400;font-size:44px;letter-spacing:.16em;animation:rise .8s .15s var(--spring) both}
+.ocard p{margin:-6px 0 0;color:var(--ink-2);font-size:14px;animation:rise .8s .25s var(--spring) both}
+.drop{width:100%;border-radius:20px;padding:22px 18px;border:1px dashed rgba(255,255,255,.22);display:flex;flex-direction:column;align-items:center;gap:10px;transition:background .3s,border-color .3s;animation:rise .8s .35s var(--spring) both}
+.drop:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.4)}
+.drop .ic{width:30px;height:30px;color:var(--ink-2);stroke-width:1.4}
+.drop b{font-size:14px;font-weight:600}.drop small{font-size:12px;color:var(--ink-3)}
+.path{font:12px ui-monospace,Menlo,monospace;color:var(--ink-2);padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.06)}
+.scan{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.ring{width:96px;height:96px}
+.ring circle{fill:none;stroke-width:5}
+.ring .bg{stroke:rgba(255,255,255,.1)}
+.ring .fg{stroke:#fff;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .25s linear}
+.scan b{font-size:15px;font-variant-numeric:tabular-nums}
+.scan small{font-size:12px;color:var(--ink-3);min-height:16px}
+
+/* ---------- settings sheet ---------- */
+.dim{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.45);display:grid;place-items:center;animation:fade .3s both}
+@keyframes fade{from{opacity:0}}
+.sheet{width:min(600px,calc(100% - 32px));max-height:calc(100% - 48px);overflow:auto;border-radius:26px;background:rgba(30,30,34,.86);backdrop-filter:blur(40px) saturate(170%);-webkit-backdrop-filter:blur(40px) saturate(170%);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14),0 40px 100px rgba(0,0,0,.7);animation:sheetIn .5s var(--spring) both;scrollbar-width:none}
+@keyframes sheetIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+.shead{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px;padding:16px 18px;background:rgba(30,30,34,.8);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.shead h3{margin:0;font-size:15px;font-weight:700;flex:1;text-align:center}
+.done{height:30px;padding:0 16px;border-radius:999px;background:#fff;color:#000;font-size:13px;font-weight:600}
+.sbody{padding:4px 18px 22px;display:flex;flex-direction:column;gap:18px}
+.gl h5{margin:0 0 6px 12px;font-size:11px;font-weight:600;color:var(--ink-3)}
+.gl .box{border-radius:14px;background:rgba(255,255,255,.06);overflow:hidden}
+.gr{display:flex;align-items:center;gap:12px;min-height:44px;padding:9px 14px;font-size:13px}
+.gr + .gr{border-top:.5px solid var(--hair)}
+.gr .sq{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:#fff;flex:none}
+.gr .sq .ic{width:15px;height:15px}
+.gr .tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.gr .tx small{font-size:11px;color:var(--ink-3)}
+.gr .val{margin-left:auto;color:var(--ink-3);font-size:13px;display:flex;align-items:center;gap:6px;flex:none}
+.sw{margin-left:auto;width:42px;height:26px;border-radius:999px;background:rgba(255,255,255,.18);position:relative;flex:none;transition:background .3s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .35s var(--spring)}
+.sw.on{background:var(--live)}.sw.on::after{transform:translateX(16px)}
+.free{font-size:12px;color:var(--ink-3);text-align:center}
+
+/* toast */
+.toast{position:absolute;z-index:50;left:50%;top:16px;transform:translate(-50%,-20px);opacity:0;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;pointer-events:none;transition:opacity .3s,transform .45s var(--spring)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.flip{position:absolute;z-index:2;object-fit:cover;pointer-events:none}
+
+/* ---------- liquid glass (SVG kırılma) ---------- */
+.circ,.gbtn,.pill,.cplay span{position:relative}
+.lg .glass{background:rgba(40,40,48,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(255,255,255,.07),inset 0 0 0 .5px rgba(255,255,255,.22),inset 2px 2px 1px -2px rgba(255,255,255,.6),inset -2px -2px 1px -2px rgba(255,255,255,.32),0 14px 40px -14px rgba(0,0,0,.7)}
+.lg .side.glass{background:rgba(30,30,36,.26)}
+.lg .pop.glass,.lg .ocard.glass,.lg .toast.glass{background:rgba(30,30,36,.32)}
+.lg .glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(140deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,rgba(255,255,255,.08) 100%)}
+
+/* ---------- açılış: perde ---------- */
+.intro{position:absolute;inset:0;z-index:60;background:#000;overflow:hidden;cursor:pointer;transition:opacity .9s var(--ease),transform 1.1s var(--spring)}
+.intro.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.intro canvas{position:absolute;inset:0;width:100%;height:100%}
+.iword{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;width:min(680px,92%);pointer-events:none}
+.iword h2{margin:0;font-family:var(--f-brand);font-weight:400;font-size:clamp(54px,10vw,128px);letter-spacing:.5em;padding-left:.5em;line-height:1;white-space:nowrap;background:linear-gradient(180deg,#fff 25%,#a7a7b0);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0}
+.ilines{position:relative;width:100%;height:8px;margin-top:20px}
+.ilines i{position:absolute;top:0;height:1px;left:12.5%;width:75%;transform:scaleX(0);background:linear-gradient(90deg,transparent,rgba(255,224,178,.95),transparent)}
+.ilines i:nth-child(2){height:2px;filter:blur(2px)}
+.ilines i:nth-child(3){left:37.5%;width:25%;background:linear-gradient(90deg,transparent,#fff,transparent)}
+.ilines i:nth-child(4){left:37.5%;width:25%;height:5px;filter:blur(3px);background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent)}
+.iword p{margin:150px 0 0;font-size:14px;letter-spacing:.08em;color:var(--ink-2);opacity:0}
+
+/* ---------- dosyalar: cam klasörler ---------- */
+.fgrid{display:flex;flex-wrap:wrap;gap:110px 44px;padding-top:110px;padding-bottom:60px}
+.gf{--gf-px:0;--gf-py:0;--gf-ease:cubic-bezier(.2,.8,.2,1);--gf-spring:cubic-bezier(.34,1.36,.5,1);--gf-hinge:0deg;--gf-lift:42px;--gf-spread:0px;--gf-fan:0deg;--gf-stack:15px;position:relative;flex:none;isolation:isolate;color:#f5f5f7}
+.gf:hover,.gf:focus-within{--gf-hinge:-11deg;--gf-lift:-34px;--gf-spread:8px;--gf-fan:1.4deg;--gf-stack:10px}
+.gf[data-open]{--gf-hinge:-24deg;--gf-lift:-96px;--gf-spread:40px;--gf-fan:5deg;--gf-stack:30px;z-index:3}
+.gf-stage{position:absolute;left:0;top:0;width:340px;height:272px;transform-origin:0 0}
+.gf-tilt{position:absolute;inset:0;transform:perspective(1400px) rotateX(calc(var(--gf-py)*-3deg)) rotateY(calc(var(--gf-px)*4deg));transition:transform .9s var(--gf-ease)}
+.gf-shadow{position:absolute;left:18px;right:18px;bottom:-6px;height:60px;border-radius:40px;background:rgba(0,0,0,.62);filter:blur(22px);transform:translateX(calc(var(--gf-px)*-8px));transition:transform .9s var(--gf-ease),opacity .9s var(--gf-ease)}
+.gf-back{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,#2a2a2e,#121214);transition:translate 1s var(--gf-ease),opacity .9s var(--gf-ease)}
+.gf-art{position:absolute;left:-12px;top:-12px;width:364px;height:296px;max-width:none;object-fit:cover;transform:translate(calc(var(--gf-px)*-7px),calc(var(--gf-py)*-6px)) scale(1.02);transition:transform 1.1s var(--gf-ease)}
+.gf-sheen{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 22%),radial-gradient(120% 80% at 80% 0%,rgba(255,255,255,.12),transparent 60%)}
+.gf-rim{position:absolute;left:0;top:0;max-width:none;overflow:visible;pointer-events:none;fill:none}
+.gf-rim.b{width:340px;height:272px;transition:translate 1s var(--gf-ease),opacity .9s var(--gf-ease)}
+.gf-rim.b path{stroke:rgba(255,255,255,.16);stroke-width:1}
+.gf-files{position:absolute;inset:0;z-index:5;pointer-events:none;clip-path:inset(-400px -400px 10px -400px)}
+.gf-sheet{position:absolute;left:34px;top:96px;width:272px;height:184px;border-radius:16px;overflow:hidden;cursor:pointer;pointer-events:auto;text-align:left;background:linear-gradient(180deg,#2c2c30,#1c1c1f);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 0 0 .5px rgba(255,255,255,.08),0 12px 28px -8px rgba(0,0,0,.7);transform-origin:50% 100%;
+  transform:translate(calc(var(--gf-jx) + var(--gf-slot)*var(--gf-spread)),calc(var(--gf-lift) + var(--gf-depth)*var(--gf-stack)*-1)) rotate(calc(var(--gf-jr) + var(--gf-slot)*var(--gf-fan)));
+  transition:transform .75s var(--gf-spring) calc(var(--gf-depth)*40ms),box-shadow .4s var(--gf-ease),translate .9s var(--gf-ease),opacity .9s var(--gf-ease)}
+.gf[data-open] .gf-sheet:hover,.gf[data-open] .gf-sheet:focus-visible{transform:translate(calc(var(--gf-jx) + var(--gf-slot)*var(--gf-spread)),calc(var(--gf-lift) + var(--gf-depth)*var(--gf-stack)*-1 - 18px)) rotate(calc(var(--gf-slot)*var(--gf-fan)*.6));box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 22px 40px -12px rgba(0,0,0,.85);transition-delay:0s}
+.gf-sheet img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gf-sheet.art::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent 40%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);pointer-events:none}
+.gf-head{position:absolute;left:14px;right:14px;top:11px;z-index:1;display:flex;align-items:baseline;justify-content:space-between;gap:10px;white-space:nowrap}
+.gf-name{overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:600;color:#fafafa}
+.gf-fmeta{flex:none;font:10px ui-monospace,Menlo,monospace;color:rgba(250,250,250,.66)}
+.gf-lines{position:absolute;left:14px;right:14px;top:40px;display:flex;flex-direction:column;gap:9px}
+.gf-lines i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.08)}
+.gf-lines i:first-child{height:9px;margin-bottom:4px;background:rgba(255,255,255,.16)}
+.gf-front{position:absolute;left:0;top:74px;width:340px;height:198px;z-index:10;backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);transform-origin:50% 100%;transform:perspective(760px) rotateX(var(--gf-hinge));transition:transform .8s var(--gf-spring),translate 1s var(--gf-ease),opacity 1s var(--gf-ease)}
+.gf-tint{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,18,20,.18),rgba(14,14,16,.62) 46%,rgba(8,8,10,.94))}
+.gf-spec{position:absolute;inset:0;pointer-events:none;background:radial-gradient(260px 200px at calc(50% + var(--gf-px)*46%) calc(30% + var(--gf-py)*40%),rgba(255,255,255,.5),transparent 70%);mix-blend-mode:screen;opacity:.16}
+.gf-rim.f{width:340px;height:198px;opacity:.55}
+.gf-rim.f path{stroke-width:2.4}
+.gf-hit{position:absolute;inset:0;z-index:1;cursor:pointer}
+.gf-label{position:absolute;z-index:2;left:28px;bottom:32px;display:flex;flex-direction:column;gap:4px;max-width:220px;pointer-events:none}
+.gf-title{font-size:18px;font-weight:500;letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gf-meta{font:12px ui-monospace,Menlo,monospace;letter-spacing:.03em;color:rgba(245,245,247,.58);white-space:nowrap}
+.gf-key{position:absolute;right:22px;bottom:22px;z-index:12;width:58px;height:58px;border-radius:18px;display:grid;place-items:center;color:#f5f5f7;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.06));box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1px rgba(255,255,255,.1),0 10px 18px -8px rgba(0,0,0,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .35s var(--gf-spring),opacity .6s var(--gf-ease) .7s,scale .7s var(--gf-spring) .7s}
+.gf-key:hover{transform:translateY(-2px)}.gf-key:active{transform:scale(.93)}
+.gf-key svg{width:30px;height:12px;fill:none;stroke:currentColor;stroke-width:1.7}
+.gf-menu{position:absolute;right:22px;bottom:90px;z-index:20;min-width:200px;padding:6px;border-radius:16px;display:flex;flex-direction:column;background:rgba(30,30,34,.72);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 0 .5px rgba(255,255,255,.1),0 24px 48px -16px rgba(0,0,0,.8);transform-origin:100% 100%;opacity:0;visibility:hidden;transform:translateY(6px) scale(.94);transition:opacity .2s var(--gf-ease),transform .32s var(--gf-spring),visibility 0s .32s}
+.gf-menu[data-open]{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.gf-mi{padding:9px 12px;border-radius:10px;font-size:13.5px;text-align:left;color:#f4f4f5}
+.gf-mi:hover,.gf-mi:focus-visible{background:rgba(255,255,255,.09)}
+.gf-mi.danger{color:#ff6b5e}
+.gf:not([data-entered]) .gf-back,.gf:not([data-entered]) .gf-rim.b{translate:0 22px;opacity:0}
+.gf:not([data-entered]) .gf-sheet{translate:0 -120px;opacity:0}
+.gf:not([data-entered]) .gf-front{translate:0 46px;opacity:0}
+.gf:not([data-entered]) .gf-key{opacity:0;scale:.6}
+.gf:not([data-entered]) .gf-shadow{opacity:0}
+.gf[data-entered] .gf-sheet{transition-delay:calc(var(--gf-depth)*40ms),0s,calc(.18s + var(--gf-depth)*90ms),calc(.18s + var(--gf-depth)*90ms)}
+.gf[data-entered] .gf-front{transition-delay:0s,.42s,.42s}
+.fhint{font:11px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+
+@media (max-width:860px){
+  :root{--sbw:0px}
+  .side{transform:translateX(-110%);opacity:0;width:228px}
+  .side.open{transform:none;opacity:1}
+  #sbtoggle{display:grid}
+  .bar{left:14px}
+  .pad{padding-left:20px;padding-right:20px}
+  .rail{padding-left:20px;scroll-padding-left:20px}
+  .rnav{display:none}
+  .hinfo,.dinfo{left:20px;right:20px;bottom:46px}
+  .dots{right:20px;bottom:18px}
+  .pc{flex-basis:122px}.cc{flex-basis:240px}
+  .crow .t{display:none}
+}
+@media (max-width:520px){
+  .ov{display:none}
+  .crow .opt-hide{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+  .slide img,.dbg img{transform:none!important}
+}
+
+/* ---------- dil ---------- */
+html[data-l=en] .l-tr{display:none!important}
+html:not([data-l=en]) .l-en{display:none!important}
+.sfoot{display:flex;align-items:center;gap:4px}
+.sfoot .nav{flex:1;min-width:0}
+.mini{display:inline-flex;padding:2px;border-radius:999px;background:rgba(255,255,255,.07);flex:none;margin-right:4px}
+.mini button{font-size:10px;font-weight:700;padding:4px 7px;border-radius:999px;color:var(--ink-3);transition:background .2s,color .2s}
+.mini button.on{background:rgba(255,255,255,.18);color:#fff}
+/* disk kartı: tıklayınca kütüphane özetine büyür */
+.disk{cursor:pointer;text-align:left;transition:background .3s}
+.disk:hover{background:rgba(255,255,255,.08)}
+.disk > span{display:block}
+.dstats{display:grid!important;grid-template-rows:0fr;transition:grid-template-rows .45s var(--spring)}
+.disk.open .dstats{grid-template-rows:1fr}
+.dstats > span{overflow:hidden;display:flex;flex-direction:column;gap:8px;min-height:0}
+.dnum{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:6px}
+.dnum span{display:flex;flex-direction:column;padding:7px 8px;border-radius:9px;background:rgba(255,255,255,.05)}
+.dnum b{font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.dgen{display:flex;flex-wrap:wrap;gap:4px}
+.dgen i{font-style:normal;font-size:10px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--ink-2)}
+/* vitrin okları, ortadaki noktalar, başrol */
+.harr{position:absolute;z-index:2;top:44%;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;opacity:0;transition:opacity .25s,transform .2s var(--spring)}
+.hero:hover .harr{opacity:1}
+.harr:active{transform:scale(.92)}
+.harr.l{left:calc(var(--sbw) + 22px)}.harr.r{right:18px}
+.dots{left:50%!important;right:auto!important;bottom:22px!important;transform:translateX(-50%);padding-left:var(--sbw)}
+.starring{font-size:12px;color:var(--ink-3)}.starring b{color:var(--ink-2);font-weight:500}
+.newb{font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 7px;border-radius:6px;background:#fff;color:#000}
+.play.wide{padding:0 36px 0 30px}
+/* puanlar */
+.ratings{display:flex;flex-wrap:wrap;gap:8px}
+.rt{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:8px;background:rgba(255,255,255,.09);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.rt i{font-style:normal;font-size:9px;font-weight:800;padding:2px 4px;border-radius:4px}
+.rt .imdb{background:#f5c518;color:#000}.rt .rtm{background:#fa320a;color:#fff}
+/* türler */
+.gtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;padding-top:22px;padding-bottom:40px}
+.gtile{position:relative;height:112px;border-radius:18px;overflow:hidden;text-align:left;padding:14px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12);transition:transform .4s var(--spring)}
+.gtile:hover{transform:translateY(-3px)}
+.gtile b{font-size:17px;font-weight:700}.gtile small{font-size:12px;color:var(--ink-2)}
+/* oynatıcı çubuğu: uygulamadaki düzen */
+.srow2{display:flex;align-items:center;gap:12px}
+.srow2 .t{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:48px}
+.srow2 .t.r{text-align:right}
+.srow2 .scrub{flex:1}
+.crow .lft,.crow .rgt{display:flex;gap:2px;flex:1}
+.crow .rgt{justify-content:flex-end}
+.crow .mid{flex:none!important}
+.sub.contour span{font-weight:700;text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000,0 2px 6px rgba(0,0,0,.8)}
+.sub.yellow span{color:#ffe65a;text-shadow:0 0 3px #000,0 2px 8px rgba(0,0,0,.9)}
+.findrow{display:flex;align-items:center;gap:10px;margin:4px 4px 6px;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.08);font-size:12px}
+.findrow b{font-weight:600}.findrow .fetch{margin-left:auto;height:26px;padding:0 12px}
+/* açılış: söz ve devam satırı */
+.iquote{margin:96px 0 0;max-width:600px;text-align:center;opacity:0;padding:0 16px}
+.iquote q{display:block;font:italic 400 clamp(16px,2vw,21px)/1.45 Georgia,"New York","Times New Roman",serif;color:rgba(255,255,255,.9)}
+.iquote small{display:block;margin-top:10px;font:italic 500 13px Georgia,"Times New Roman",serif;color:rgba(255,255,255,.55);letter-spacing:.04em}
+.iprompt{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:rgba(255,255,255,.62);white-space:nowrap;opacity:0}
+.iprompt kbd{font:600 11px var(--f-ui);padding:3px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.4)}
+@keyframes ipulse{0%,100%{opacity:.5}50%{opacity:1}}
+.iprompt.on{animation:ipulse 2.8s ease-in-out infinite}
+@media (max-width:520px){.srow2 .t{display:none}}
+/* tek renkli ayar simgeleri */
+.gr .sq{background:rgba(255,255,255,.1)!important;color:var(--ink)}
+.gr .mini{margin-left:auto;margin-right:0}
+/* anlatım bölümü */
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.feat div{padding:16px;border-radius:18px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 .5px var(--hair);display:flex;flex-direction:column;gap:6px;min-width:0}
+.feat b{font-size:15px;letter-spacing:-.01em}.feat p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;counter-reset:st}
+.flow div{position:relative;padding:14px 14px 14px 46px;border-radius:16px;background:rgba(255,255,255,.04);font-size:13px;line-height:1.45;color:var(--ink-2);min-width:0}
+.flow div::before{counter-increment:st;content:counter(st);position:absolute;left:14px;top:13px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:rgba(255,255,255,.12);color:#fff}
+.flow b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:2px}
+
+/* ---------- sistem penceresi: macOS · Windows · Linux (GNOME) ---------- */
+.win[data-os=windows]{--win-r:8px}
+.win[data-os=linux]{--win-r:12px}
+.win:not([data-os=macos]) .lights{display:none}
+.win:not([data-os=macos]) .side{padding-top:12px}
+.caption{display:none;position:absolute;z-index:60;top:0;right:0;align-items:center}
+.caption button{display:grid;place-items:center;color:var(--ink-2)}
+.caption svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:1.1}
+.win[data-os=windows] .caption{display:flex}
+.win[data-os=windows] .caption button{width:46px;height:32px;transition:background .15s}
+.win[data-os=windows] .caption button:hover{background:rgba(255,255,255,.08);color:#fff}
+.win[data-os=windows] .caption button.x:hover{background:#c42b1c}
+.win[data-os=linux] .caption{display:flex;gap:12px;top:14px;right:16px}
+.win[data-os=linux] .caption button{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);transition:background .15s}
+.win[data-os=linux] .caption button:hover{background:rgba(255,255,255,.18)}
+.win[data-os=linux] .caption svg{stroke-width:1.6;width:9px;height:9px}
+.win[data-os=windows] .bar{right:150px}
+.win[data-os=linux] .bar{right:124px}
+.win[data-os=windows] .toast,.win[data-os=windows] .ptop{margin-top:18px}
+
+/* ---------- film logosu (TMDB) ---------- */
+.logo.img{margin:0}
+.logo.img img{display:block;max-width:min(460px,78%);max-height:140px;width:auto;height:auto;object-fit:contain;object-position:left bottom;filter:drop-shadow(0 6px 24px rgba(0,0,0,.55))}
+.dinfo .logo.img img{max-height:160px}
+
+/* ---------- puanlar: dört kaynak ---------- */
+.rt i.tmdb{background:#01b4e4;color:#062a33}
+.rt i.mc{background:#ffcc34;color:#111}
+
+/* ---------- geri bildirim satırı (kenar çubuğu, Ayarlar'ın üstü) ---------- */
+.nav.fb .fbt{background:linear-gradient(100deg,rgba(235,235,245,.86) 0 40%,#fff 48%,#ffd98a 52%,rgba(235,235,245,.86) 60% 100%);background-size:260% 100%;background-position:100% 0;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:fbSweep 6s var(--ease) infinite}
+.nav.fb .ic{animation:fbWiggle 6s var(--ease) infinite}
+.nav.fb.ping{background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
+@keyframes fbSweep{0%,70%{background-position:100% 0}92%,100%{background-position:0 0}}
+@keyframes fbWiggle{0%,74%,100%{transform:none}78%{transform:rotate(-10deg)}82%{transform:rotate(8deg)}86%{transform:rotate(-4deg)}}
+
+/* ---------- sayfa (sheet) ortakları: düzen ve geri bildirim ---------- */
+.sheet .lead{font-size:13px;line-height:1.5;color:var(--ink-2);margin:0 4px}
+.sheet .acts2{display:flex;justify-content:flex-end;gap:8px;padding-top:4px}
+.btn2{height:32px;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.1);font-size:13px;font-weight:600}
+.btn2.pri{background:#fff;color:#000}
+.btn2[disabled]{opacity:.4;pointer-events:none}
+
+/* kütüphane düzeni: önce → sonra */
+.clean{display:flex;flex-direction:column}
+.crow2{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:10px 14px;font-size:12.5px}
+.crow2 + .crow2{border-top:.5px solid var(--hair)}
+.crow2 .old{color:var(--ink-2);overflow-wrap:anywhere}
+.crow2 .old s{text-decoration:none;color:var(--ink-3);transition:color .4s,opacity .4s}
+.crow2 .arr{color:var(--ink-3)}
+.crow2 .new{font-weight:600;color:var(--ink);opacity:.35;transition:opacity .4s,transform .4s var(--spring)}
+.crow2.done .old s{color:#ff6b5e;text-decoration:line-through;opacity:.55}
+.crow2.done .new{opacity:1}
+.crow2.done .new::after{content:" ✓";color:var(--live)}
+
+/* geri bildirim formu */
+.fbseg{display:flex;padding:2px;border-radius:10px;background:rgba(255,255,255,.07)}
+.fbseg button{flex:1;height:28px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.fbseg button.on{background:rgba(255,255,255,.16);color:#fff}
+.fbtext{width:100%;min-height:132px;resize:none;border:0;border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.06);color:var(--ink);font:13px/1.5 var(--f-ui);outline:none}
+.fbtext:focus{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.fbmeta{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);padding:0 4px}
+
+/* güncelleme satırı */
+.gr .upd{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+.gr .upd small{font-size:12px;color:var(--ink-3)}
+.gr .upd a{color:inherit;text-decoration:none}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 4.8v14.4a.8.8 0 0 0 1.2.7l11.6-7.2a.8.8 0 0 0 0-1.4L8.7 4.1a.8.8 0 0 0-1.2.7z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></symbol>
+  <symbol id="i-chl" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+  <symbol id="i-chr" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></symbol>
+  <symbol id="i-house" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h4.5v-5.5h3V20H18V9.5"/></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M7.5 4v16M16.5 4v16M3.5 9h4M3.5 15h4M16.5 9h4M16.5 15h4"/></symbol>
+  <symbol id="i-stack" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="2.5"/><path d="M6.5 5h11M9 2.5h6"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M7 3.5h10a.5.5 0 0 1 .5.5v16l-5.5-3.8L6.5 20V4a.5.5 0 0 1 .5-.5z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-disk" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="9" rx="2.5"/><circle cx="17" cy="12.5" r="1" fill="currentColor"/><path d="M6.5 12.5h5"/></symbol>
+  <symbol id="i-cc" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 12.5h4M13 12.5h4M7 15.5h7"/></symbol>
+  <symbol id="i-spk" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4.2 17a8.5 8.5 0 1 1 15.6 0"/><path d="m12 13 4-4"/></symbol>
+  <symbol id="i-pip" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><rect x="12" y="11" width="6.5" height="5.5" rx="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-air" viewBox="0 0 24 24"><path d="M6.5 17H5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 5 5h14a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 17h-1.5"/><path d="M12 13.5l4.5 6h-9z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-b10" viewBox="0 0 24 24"><path d="M12 4.5a7.5 7.5 0 1 1-7.2 5.4"/><path d="M4.2 5.2 4.8 10l4.6-1.2"/><text x="12" y="15.2" font-size="6.6" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="-apple-system,Helvetica,Arial">10</text></symbol>
+  <symbol id="i-f10" viewBox="0 0 24 24"><path d="M12 4.5a7.5 7.5 0 1 0 7.2 5.4"/><path d="M19.8 5.2 19.2 10l-4.6-1.2"/><text x="12" y="15.2" font-size="6.6" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none" font-family="-apple-system,Helvetica,Arial">10</text></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2h8a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 9.6a4.5 4.5 0 0 1-.5 8.9z"/></symbol>
+  <symbol id="i-net" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="5" rx="1"/><rect x="3" y="15.5" width="6" height="5" rx="1"/><rect x="15" y="15.5" width="6" height="5" rx="1"/><path d="M12 8.5v3.5M6 15.5V12h12v3.5"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 0 1-13 5.1M4.5 12a7.5 7.5 0 0 1 13-5.1"/><path d="M17.8 3.5v3.6h-3.6M6.2 20.5v-3.6h3.6"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 10.5v3"/></symbol>
+  <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M9.5 5v14"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="18" cy="12" r="1.4" fill="currentColor"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></symbol>
+  <symbol id="i-trailer" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2.5"/><path d="M8.5 20h7"/></symbol>
+  <symbol id="i-uhd" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9.5v3.2h3M9.5 9.5v5.5M13.5 9.5v5.5M17 9.5l-2.6 2.7L17 15"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8.5 7h11M8.5 12h11M8.5 17h11"/><circle cx="4.8" cy="7" r=".9" fill="currentColor"/><circle cx="4.8" cy="12" r=".9" fill="currentColor"/><circle cx="4.8" cy="17" r=".9" fill="currentColor"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17H10l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5Z"/><path d="M8 10h8M8 13h5"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 2.5 14.4 0 17M12 3.5c-2.5 2.6-2.5 14.4 0 17"/></symbol>
+</svg>
+
+  <div class="win" id="win" data-os="macos">
+    <div class="amb"></div>
+    <div class="content" id="content"></div>
+    <div class="edge" id="edge"></div>
+
+    <aside class="side glass" id="side" aria-label="Kenar çubuğu">
+      <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+      <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Ara" autocomplete="off"></label>
+      <button class="nav on" data-nav="home"><svg class="ic"><use href="#i-house"/></svg>Ana Sayfa</button>
+      <button class="nav" data-nav="list"><svg class="ic"><use href="#i-mark"/></svg>İzleme Listesi<em id="wlc">2</em></button>
+      <button class="nav" data-nav="files"><svg class="ic"><use href="#i-folder"/></svg>Dosyalar<em>4</em></button>
+      <span class="grp">Kütüphane</span>
+      <button class="nav" data-nav="recent"><svg class="ic"><use href="#i-clock"/></svg>Yeni Eklenenler</button>
+      <button class="nav" data-nav="grid"><svg class="ic"><use href="#i-film"/></svg>Filmler<em>12</em></button>
+      <button class="nav" data-nav="shows"><svg class="ic"><use href="#i-tv"/></svg>Diziler</button>
+      <button class="nav" data-nav="uhd"><svg class="ic"><use href="#i-uhd"/></svg>4K HDR<em>8</em></button>
+      <button class="nav" data-nav="genres"><svg class="ic"><use href="#i-list"/></svg>Türler<em>10</em></button>
+      <button class="nav" data-nav="coll"><svg class="ic"><use href="#i-stack"/></svg>Koleksiyonlar<em>4</em></button>
+      <span class="grp">Kaynaklar</span>
+      <button class="nav" data-nav="src"><svg class="ic"><use href="#i-disk"/></svg>PixelVault<span class="dot" title="Bağlı"></span></button>
+      <button class="nav" data-nav="add"><svg class="ic"><use href="#i-plus"/></svg>Kaynak Ekle</button>
+      <span class="sp"></span>
+      <button class="disk" id="disk" aria-expanded="false" aria-label="Kütüphane özeti"><b>12 başlık · 128 GB</b><span class="meter"><i></i><i></i></span><span>8 4K · 4 HD</span><span class="dstats"><span><span class="dnum"><span><b>12</b>film</span><span><b>8</b>4K HDR</span><span><b>28</b>saat</span><span><b>9</b>TR altyazılı</span></span><span class="dgen"><i>Dram</i><i>Bilim-Kurgu</i><i>Komedi</i><i>Macera</i><i>Romantik</i></span></span></span></button>
+      <button class="nav fb" data-nav="feedback"><svg class="ic"><use href="#i-chat"/></svg><span class="fbt">Geri bildirim</span></button>
+      <div class="sfoot"><button class="nav" data-nav="settings"><svg class="ic"><use href="#i-gear"/></svg>Ayarlar</button><span class="mini" role="group" aria-label="Language"><button data-lang="en">EN</button><button data-lang="tr">TR</button></span></div>
+    </aside>
+
+    <div class="bar">
+      <button class="circ glass" id="sbtoggle" aria-label="Kenar çubuğunu aç"><svg class="ic"><use href="#i-sidebar"/></svg></button>
+      <button class="circ glass" id="back" aria-label="Geri"><svg class="ic"><use href="#i-chl"/></svg></button>
+      <span class="title" id="btitle"></span>
+      <span class="grow"></span>
+      <div class="pill glass">
+        <button aria-label="Görünüm" id="gview"><svg class="ic"><use href="#i-grid"/></svg></button>
+        <button aria-label="Kütüphaneyi yenile" id="refresh"><svg class="ic"><use href="#i-sync"/></svg></button>
+        <button aria-label="Diğer"><svg class="ic"><use href="#i-dots"/></svg></button>
+      </div>
+    </div>
+
+    <div class="toast glass" id="toast"></div>
+    <div class="caption" aria-hidden="true">
+      <button tabindex="-1"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button>
+      <button tabindex="-1"><svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1"/></svg></button>
+      <button tabindex="-1" class="x"><svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg></button>
+    </div>
+  </div>
+
+<script>
+(function(){
+"use strict";
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Filmler: public/tour/films.js (src/data/films.ts). Prototipin alanlarına çevrilir. */
+var FONT_OF={};
+var PROG={'oppenheimer':.42,'la-la-land':.68,'parasite':.17};
+var SEEN={'amelie':1,'spirited-away':1};
+var LOCAL={'blade-runner-2049':['English'],'parasite':['English']};
+function shade(c,k){var v=hex(c);return '#'+v.map(function(x){return Math.round(x*k).toString(16).padStart(2,'0')}).join('')}
+var films=(window.PERDE_FILMS||[]).map(function(d,i){var file=d.file;
+  return {id:d.id,t:d.title.tr,tEn:d.title.en,y:d.year,q:d.uhd?'4K':'1080p',src:/BluRay|UHD/.test(file)?'BluRay':'WEB',
+    gb:d.uhd?13+(d.minutes%9):2+(d.minutes%5)*.7,run:d.minutes,g:d.genres.map(function(x){return x.tr}).join(', '),
+    dir:d.director,cast:d.cast,ov:d.summary.tr,ovEn:d.summary.en,file:file,scores:d.scores,
+    pal:[shade(d.tint,.32),d.tint,'#ffffff','#050506'],font:FONT_OF[d.id]||'dms',
+    tr:d.subtitles?'online':'none',local:LOCAL[d.id],add:i+1,prog:PROG[d.id]||0,seen:SEEN[d.id]||0,
+    logo:d.logo,au:/Atmos/.test(file)?'Atmos':/7\.1/.test(file)?'7.1':/2\.0/.test(file)?'2.0':'5.1'}});
+var F = {}; films.forEach(function(f){ F[f.id]=f; f.au=f.au||'5.1'; });
+var watch = {'interstellar':1, 'little-women':1};
+var OE={};films.forEach(function(f){OE[f.id]=f.ovEn});
+var SC={};films.forEach(function(f){SC[f.id]=f.scores});
+var GEN={'Romantik':'Romance','Bilim-Kurgu':'Science Fiction','Tarih':'History','Macera':'Adventure','Destan':'Epic','Dram':'Drama','Western':'Western','Bilim kurgu':'Sci-Fi','Kara komedi':'Dark Comedy','Gerilim':'Thriller','Gizem':'Mystery','Fantastik':'Fantasy','Animasyon':'Animation','Aile':'Family','Aksiyon':'Action','Suç':'Crime','Komedi':'Comedy','Savaş':'War','Korku':'Horror','Tarihi':'History'};
+var QUOTES=[["Cinema is a matter of what's in the frame and what's out.","Martin Scorsese"],["If it can be written, or thought, it can be filmed.","Stanley Kubrick"],["I dream for a living.","Steven Spielberg"],["Drama is life with the dull bits cut out.","Alfred Hitchcock"],["The cinema is not a slice of life, it's a piece of cake.","Alfred Hitchcock"],["Every time I go to a movie, it's magic, no matter what the movie's about.","Steven Spielberg"],["The best education in film is to make one.","Stanley Kubrick"],["Movies are the memories of our lifetime, we need to keep them alive.","Martin Scorsese"]];
+var EN={'Açılış':'Opening','İlk açılış':'First launch','Ana sayfa':'Home','Filmler':'Movies','Dosyalar':'Files','Film detayı':'Film page','Oynatıcı':'Player','Ayarlar':'Settings','Sıvı cam':'Liquid glass','Klasik cam':'Classic glass',
+ "Sıvı cam: kenarlarda gerçek kırılma ve renk sapması. Chrome ve Edge'de görünür.":'Liquid glass: real refraction and colour fringing at the edges. Visible in Chrome and Edge.',
+ "Bu tarayıcı SVG kırılmayı arka plana uygulayamıyor; klasik cam gösteriliyor. Sıvı camı görmek için Chrome ya da Edge'de aç.":"This browser can't refract the backdrop with SVG, so classic glass is shown. Open the page in Chrome or Edge to see liquid glass.",
+ 'Ara':'Search','Ana Sayfa':'Home','İzleme Listesi':'Watchlist','Kütüphane':'Library','Yeni Eklenenler':'Recently Added','Diziler':'TV Shows','Türler':'Genres','Koleksiyonlar':'Collections','Kaynaklar':'Sources','Kaynak Ekle':'Add Source',
+ '101 başlık · 420,58 GB':'101 titles · 420.58 GB','film':'films','saat':'hours','TR altyazılı':'TR subtitles','Kütüphane özeti':'Library summary',
+ 'Kenar çubuğu':'Sidebar','Kenar çubuğunu aç':'Open sidebar','Geri':'Back','Görünüm':'View','Kütüphaneyi yenile':'Refresh library','Diğer':'More','Bağlı':'Connected','Perde uygulama simgesi':'Perde app icon','Ekranlar':'Screens','Cam türü':'Glass type',
+ 'Geri kaydır':'Scroll back','İleri kaydır':'Scroll forward','İzlemeye devam et':'Continue Watching','Yeni eklenenler':'Recently Added','PixelVault · son 7 gün':'PixelVault · last 7 days','TMDB koleksiyonları ve akıllı listeler':'TMDB collections and smart lists','TMDB koleksiyonu · 3 film':'TMDB collection · 3 films','Animasyon gecesi':'Animation night','Akıllı liste · 3 film':'Smart list · 3 films','Uzay ve zaman':'Space and time','Gece yarısı':'Midnight',
+ "Film bilgileri ve görseller TMDB'den. Bu ürün TMDB API'sini kullanır ancak TMDB tarafından onaylanmamıştır.":'Film details and images from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.',
+ 'Yeni eklendi':'Just added','YENİ':'NEW','Kütüphanenden':'From your library','Oynat':'Play','İzleme listesi':'Watchlist','Ayrıntılar':'Details','Başrolde':'Starring','Önceki':'Previous','Sonraki':'Next',
+ 'Tümü':'All','Türkçe altyazı':'Turkish subtitles','Devam eden':'In progress','Bu filtreyle eşleşen film yok.':'No film matches this filter.','Arama':'Search','4K HDR':'4K HDR',
+ 'Devam et':'Resume','İzlendi olarak işaretle':'Mark as watched','Fragman':'Trailer','Yönetmen':'Director','Oyuncular ve ekip':'Cast & Crew','Oyuncu':'Actor','Altyazı, ses ve dosya':'Subtitles, audio and file','Altyazılar':'Subtitles','Türkçe':'Turkish','OpenSubtitles · dosya özetiyle eşleşir':'OpenSubtitles · matched by file hash','İndir':'Download','Henüz bulunamadı · her gün yeniden aranır':'Not found yet · searched again every day','Yeniden ara':'Search again','İndirildi · filmin yanında':'Downloaded · next to the film','Diskte, filmin yanında':'On disk, next to the film','Ses':'Audio','Diyalog netliği':'Dialogue clarity','Konuşmaları öne çıkarır':'Brings voices forward','Dosya':'File','Kütüphanende benzerleri':'More like this in your library',
+ 'İzleme listesine eklendi':'Added to Watchlist','İzleme listesinden çıkarıldı':'Removed from Watchlist','İzlendi olarak işaretlendi':'Marked as watched','İzlenmedi olarak işaretlendi':'Marked as unwatched',"Fragman TMDB üzerinden YouTube'da açılır":'The trailer opens on YouTube through TMDB','Aranıyor':'Searching','Bulundu · indiriliyor':'Found · downloading','Türkçe altyazı henüz yok · yarın tekrar denenecek':'No Turkish subtitle yet · trying again tomorrow','İndirildi':'Downloaded','Türkçe altyazı filmin yanına kaydedildi':'Turkish subtitle saved next to the film',
+ 'PixelVault bağlı · 12 film · son tarama 2 dk önce':'PixelVault connected · 12 films · scanned 2 min ago','Klasör, ağ paylaşımı (SMB) ya da bulut klasörü eklenir':'Add a folder, a network share (SMB) or a cloud folder','PixelVault tarandı · yeni film yok':'PixelVault scanned · no new films',
+ 'Diziler: S01E01 gibi işaretli bölümler tek dizide, sezon sezon toplanır':'TV Shows: episodes marked like S01E01 gather under one show, season by season',
+ 'PixelVault diski ve akıllı klasörler. Üstüne gel, tıkla, dosyaya dokun.':'The PixelVault disk and smart folders. Hover, click, then pick a file.','Üstüne gel: kapak eğilir · Tıkla: dosyalar açılır · ··· menü':'Hover: the cover tilts · Click: the files fan out · ··· menu',
+ 'Akıllı klasör · 72 film':'Smart folder · 72 films','Eşleşme bekleyen':'Waiting for a match','4 dosya · onay bekliyor':'4 files · waiting for you','Fazla dosyalar':'Leftovers','190 dosya · 5,2 MB':'190 files · 5.2 MB',"Finder'da göster":'Show in Finder','Yeniden tara':'Rescan','Ölçütleri düzenle':'Edit criteria','Hepsini otomatik eşle':'Match all automatically','Elle eşle':'Match by hand','Hepsini sil':'Delete all','Klasörü aç':'Open folder','Klasörü kapat':'Close folder',"190 fazla dosya Çöp'e taşındı · Geri al: ⌘Z":'190 leftover files deleted',"190 fazla dosya silindi":'190 leftover files deleted',
+ 'Kapat':'Close','10 saniye geri':'Back 10 seconds','Oynat/Duraklat':'Play/Pause','10 saniye ileri':'Forward 10 seconds','Altyazı':'Subtitles','Resim içinde resim':'Picture in Picture','Tam ekran':'Full Screen','Kapalı':'Off','diskte':'on disk','Senkron':'Sync','Boyut':'Size','Küçük':'Small','Orta':'Medium','Büyük':'Large','Stil':'Style','Sade':'Plain','Kontur':'Outline','Kutu':'Box','Sarı':'Yellow','Ses izi':'Audio track','Ses gecikmesi':'Audio delay','kapalı':'off','Kayıpsız ses çözme':'Lossless audio decoding','Oynatma hızı':'Playback speed','Yayınla':'Play on','Bu Mac':'This Mac','Salon Apple TV':'Living Room Apple TV','yalnız ses':'audio only','Resim içinde resim · büyütmek için tıkla':'Picture in Picture · click to enlarge','Tam ekran bu görünümde kullanılamıyor':'Full screen is not available in this view','Türkçe altyazı yok':'No Turkish subtitle','Bul ve ekle':'Find and add','Bölümler':'Chapters',
+ 'Filmlerin, kendi sinemanda.':'Your films, in your own cinema.','Film klasörünü sürükle ya da seç':'Drag in or choose your film folder','Dosyalarına dokunulmaz, yalnızca okunur.':'Your files are only read, never changed.','Video dosyaları bulunuyor':'Finding video files','Dosya adları çözülüyor':'Reading file names','TMDB ile eşleştiriliyor':'Matching with TMDB','Afişler ve logolar indiriliyor':'Fetching posters and logos','Türkçe altyazılar aranıyor':'Looking for Turkish subtitles','Kütüphanen hazır':'Your library is ready','101 film · 97 otomatik eşleşti · 4 onay bekliyor (örnek)':'101 films · 97 matched automatically · 4 waiting for you (example)','Kütüphaneyi aç':'Open library',
+ 'Bitti':'Done','Genel':'General','Dil':'Language','Yumuşak kaydırma':'Smooth scrolling','Fare tekerleği ekranın tazeleme hızında kayar':"The mouse wheel glides at the screen's refresh rate",'Oynatma':'Playback','Kayıpsız ses':'Lossless audio','TrueHD, DTS-HD MA, FLAC çözülür':'TrueHD, DTS-HD MA and FLAC are decoded','HDR ton eşleme':'HDR tone mapping','Parlak sahneler ekranın gerçek tepe parlaklığına eşlenir':"Bright scenes are fitted to the screen's real peak brightness",'Otomatik':'Automatic','Akıllı büyütme':'Smart upscaling',"1080p altı filmler ekrana göre keskinleşir":'Films below 1080p are sharpened for the screen','Altyazı stili':'Subtitle style','Tercih edilen dil':'Preferred language','Bölgene göre':'From your region','Otomatik indir':'Download automatically','Yeni filmde altyazıyı kendisi bulur':'Finds the subtitle for each new film','Eşitleme':'Sync','iCloud eşitleme':'iCloud sync',"İzleme geçmişi ve kaldığın yer diğer Mac'lerinde":'Watch history and where you left off, on your other Macs','Ağ paylaşımı':'Network share','Ekle':'Add','Bulut klasörü':'Cloud folder','Dropbox, Google Drive, OneDrive Finder klasörleri':'Dropbox, Google Drive and OneDrive Finder folders','101 film · bağlı':'101 films · connected','Hepsi ücretsiz. Abonelik, deneme süresi, kilitli özellik yok.':'All free. No subscription, no trial, nothing locked.',
+ 'Perde açılışı':'Perde opening','Devam etmek için tıkla ya da':'Click to continue, or press','tuşuna bas':'','Türler · ':'Genres · '};
+var ENRX=[[/^1 film$/,'1 film'],[/^(\d+) film$/,'$1 films'],[/^(\d+) film · (.+)$/,'$1 films · $2'],[/^(\d+) dk kaldı$/,'$1 min left'],[/^(.+) izlemeye devam et$/,'Continue watching $1'],[/^(\d+) sa (\d+) dk$/,'$1 h $2 min'],[/^"(.+)" için (\d+) sonuç$/,'$2 results for "$1"'],[/^(\d+) film gösteriliyor · prototipte 24, diskte 101$/,'Showing $1 films · 24 in the prototype, 101 on disk'],[/^Devam et · (\d+) dk$/,'Resume · $1 min'],[/^AAC (\S+) · varsayılan$/,'AAC $1 · default'],[/^İzleme listesi: (\d+) film$/,'Watchlist: $1 films'],[/^(.+) filmini aç$/,'Open $1'],[/^(.+) klasörünü aç$/,'Open the $1 folder'],[/^(.+) için diğer seçenekler$/,'More options for $1'],[/^([+−]?)(\d+(?:\.\d)?) sn$/,'$1$2 s'],[/^(.+) cihazına yayınlanıyor$/,'Playing on $1'],[/^(\d+) tür$/,'$1 genres']];
+films.forEach(function(f){if(OE[f.id])EN[f.ov]=OE[f.id];EN[f.t]=f.tEn});
+Object.assign(EN,{'Geri bildirim':'Feedback','Aile gecesi':'Family night','Uzak yerler':'Far away','Hız ve gerilim':'Speed and suspense','Dram':'Drama','Renkli masallar':'Colourful tales','Uzay ve zaman':'Space and time',
+ 'Kütüphane düzeni':'Library cleanup','Vazgeç':'Cancel','Düzenle':'Clean up','Kapat':'Close',
+ "Klasör adlarından çözünürlük ve kaynak etiketleri çıkar, artık dosyalar Çöp'e gider. İzleme geçmişi ve eşleşmeler korunur.":'Resolution and source tags leave the folder names and leftover files go to the Trash. Progress and matches are kept.',
+ "Artık dosyalar":'Leftover files',"23 dosya · 4,1 MB":'23 files · 4.1 MB',"Çöp'e":'To the Trash',
+ "5 klasör düzenlendi · 23 artık dosya Çöp'e taşındı":'5 folders tidied · 23 leftover files moved to the Trash',
+ 'Öneri':'Idea','Hata':'Bug','Başka':'Other','Gönder':'Send','Ne düşünüyorsun? Bir öneri, bir hata, aklına gelen her şey.':'What do you think? An idea, a bug, anything at all.',
+ 'Mesaj e-posta uygulamanda açılır; yanıt kendi adresine gelir.':'The message opens in your mail app; the reply comes to your own address.',
+ 'E-posta uygulaman açılır, gönderen sen olursun':'Your mail app opens, sent from your own address',
+ 'Hakkında':'About','Güncellemeler':'Updates','Güncellemeleri denetle':'Check for updates','Denetleniyor':'Checking',
+ 'Güncellemeyi al':'Get the update','Sürüm notları':'Release notes','Bağlanılamadı · sonra yeniden dene':'Could not connect · try again later',
+ 'Akıllı klasör · 8 film':'Smart folder · 7 films','12 film · 128 GB':'12 films · 128 GB','12 başlık · 128 GB':'12 titles · 128 GB','8 4K · 4 HD':'8 4K · 4 HD'});
+ENRX.push([/^Perde güncel · (.+)$/,'Perde is up to date · $1'],[/^Perde (.+) çıktı$/,'Perde $1 is out'],[/^(\d+) \/ 1500$/,'$1 / 1500']);
+var LANG=new URLSearchParams(location.search).get('lang')==='en'?'en':'tr';
+function tx(k){var r=EN[k];if(r!=null)return r;for(var i=0;i<ENRX.length;i++){if(ENRX[i][0].test(k))return k.replace(ENRX[i][0],ENRX[i][1])}
+  if(GEN[k])return GEN[k];var parts=k.split(', ');if(parts.length>1&&parts.every(function(p){return GEN[p]}))return parts.map(function(p){return GEN[p]}).join(', ');return null}
+function skip(n){var e=n.nodeType===1?n:n.parentNode;return !e||!!(e.closest&&e.closest('script,style,.l-en,.l-tr,svg'))}
+function trText(n){if(skip(n))return;if(n._t!=null&&n.nodeValue===n._t)return;var src=n.nodeValue,k=src.trim();if(!k)return;var r=tx(k);if(r==null){n._o=null;return}n._o=src;n._t=src.replace(k,r);n.nodeValue=n._t}
+var ATTRS=['aria-label','placeholder','title'];
+function trAttrs(el){if(skip(el))return;el._oa=el._oa||{};el._ta=el._ta||{};ATTRS.forEach(function(a){var v=el.getAttribute(a);if(v==null||v===el._ta[a])return;var r=tx(v.trim());if(r==null)return;el._oa[a]=v;el._ta[a]=r;el.setAttribute(a,r)})}
+function walkEN(root){if(root.nodeType===3){trText(root);return}if(root.nodeType!==1)return;trAttrs(root);var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);var n;while(n=w.nextNode()){if(n.nodeType===3)trText(n);else trAttrs(n)}}
+function walkTR(root){var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);var n;while(n=w.nextNode()){if(n.nodeType===3){if(n._o!=null&&n.nodeValue===n._t)n.nodeValue=n._o;n._o=n._t=null}else if(n._oa){for(var a in n._oa){if(n.getAttribute(a)===n._ta[a])n.setAttribute(a,n._oa[a])}n._oa=n._ta=null}}}
+var MO=new MutationObserver(function(list){list.forEach(function(m){if(m.type==='childList')m.addedNodes.forEach(walkEN);else if(m.type==='characterData')trText(m.target);else trAttrs(m.target)})});
+function setLang(l,boot){LANG=l;document.documentElement.setAttribute('data-l',l);document.documentElement.lang=l;
+  Array.prototype.forEach.call(document.querySelectorAll('[data-lang]'),function(b){b.classList.toggle('on',b.dataset.lang===l)});
+  if(l==='en'){walkEN(document.body);MO.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTRS})}else{MO.disconnect();if(!boot)walkTR(document.body)}
+  if(window.__perdeLang)window.__perdeLang()}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b){e.stopPropagation();setLang(b.dataset.lang)}},true);
+
+/* ---------- utils ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function h(tag,cls,html){var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function ic(id,f){return '<svg class="ic'+(f?' f':'')+'"><use href="#i-'+id+'"/></svg>'}
+function hash(s){var x=2166136261;for(var i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,16777619)}return x>>>0}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hex(c){c=c.replace('#','');return[parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)]}
+function rgba(c,a){var v=hex(c);return 'rgba('+v[0]+','+v[1]+','+v[2]+','+a+')'}
+function mix(a,b,t){var x=hex(a),y=hex(b);return 'rgb('+Math.round(x[0]+(y[0]-x[0])*t)+','+Math.round(x[1]+(y[1]-x[1])*t)+','+Math.round(x[2]+(y[2]-x[2])*t)+')'}
+function lum(c){var v=hex(c);return (0.299*v[0]+0.587*v[1]+0.114*v[2])/255}
+function runText(m){return m? (Math.floor(m/60)+' sa '+(m%60)+' dk') : ''}
+function fmt(s){s=Math.max(0,Math.floor(s));var hh=Math.floor(s/3600),mm=Math.floor(s%3600/60),ss=s%60;return (hh?hh+':'+String(mm).padStart(2,'0'):mm)+':'+String(ss).padStart(2,'0')}
+function fileName(f){return f.file}
+function codec(f){return f.q==='4K'?'HEVC 10-bit':'H.264'}
+
+/* ---------- görseller: afiş (p) ve geniş kadraj (w), scripts/tour-assets.mjs üretir ---------- */
+var grainC=(function(){var c=document.createElement('canvas');c.width=c.height=160;var x=c.getContext('2d'),d=x.createImageData(160,160);for(var i=0;i<d.data.length;i+=4){var v=Math.random()*255|0;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255}x.putImageData(d,0,0);return c})();
+function logoHtml(f){var name=LANG==='en'?f.tEn:f.t;return f.logo?'<h2 class="logo img"><img src="img/l-'+f.id+'.webp" alt="'+esc(name)+'"></h2>':'<h2 class="logo">'+esc(f.t)+'</h2>'}
+function art(f,kind){return 'img/'+(kind==='p'?'p-':'w-')+f.id+'.webp'}
+function bgFor(f){return 'linear-gradient(160deg,'+f.pal[1]+','+f.pal[3]+')'}
+
+/* ---------- liquid glass engine (SDF kırılma haritası + SVG feDisplacementMap) ---------- */
+var NS='http://www.w3.org/2000/svg',UA=navigator.userAgent;
+var LG={ok:/Chrome\/\d/.test(UA)&&!/Firefox/.test(UA),on:false,cache:{},n:0,defs:null};
+LG.on=LG.ok;
+function lgDefs(){if(!LG.defs){var sv=document.createElementNS(NS,'svg');sv.setAttribute('width','0');sv.setAttribute('height','0');sv.setAttribute('aria-hidden','true');sv.style.cssText='position:absolute;width:0;height:0;overflow:hidden';LG.defs=document.createElementNS(NS,'defs');sv.appendChild(LG.defs);document.body.appendChild(sv)}return LG.defs}
+function lgMap(w,h,r,bz){var sc=.5,cw=Math.max(2,Math.round(w*sc)),ch=Math.max(2,Math.round(h*sc)),c=document.createElement('canvas');c.width=cw;c.height=ch;
+  var x=c.getContext('2d'),im=x.createImageData(cw,ch),d=im.data,hw=w/2,hh=h/2,R=Math.min(r,hw,hh);
+  function sdf(px,py){var qx=Math.abs(px)-hw+R,qy=Math.abs(py)-hh+R;return Math.min(Math.max(qx,qy),0)+Math.hypot(Math.max(qx,0),Math.max(qy,0))-R}
+  for(var j=0;j<ch;j++)for(var i=0;i<cw;i++){var px=(i+.5)/sc-hw,py=(j+.5)/sc-hh,e=-sdf(px,py),k=(j*cw+i)*4,dx=0,dy=0;
+    if(e>0&&e<bz){var gx=sdf(px+1,py)-sdf(px-1,py),gy=sdf(px,py+1)-sdf(px,py-1),gl=Math.hypot(gx,gy)||1,t=1-e/bz,m=t*t;dx=-gx/gl*m;dy=-gy/gl*m}
+    d[k]=128+dx*127;d[k+1]=128+dy*127;d[k+2]=128;d[k+3]=255}
+  x.putImageData(im,0,0);return c.toDataURL()}
+function lgFilter(w,h,r,bz,s){var key=[w,h,r,bz,s].join('_');if(LG.cache[key])return LG.cache[key];
+  var id='lgf'+(LG.n++),f=document.createElementNS(NS,'filter');
+  [['id',id],['x','0'],['y','0'],['width',w],['height',h],['filterUnits','userSpaceOnUse'],['color-interpolation-filters','sRGB']].forEach(function(a){f.setAttribute(a[0],a[1])});
+  var mats=['1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0','0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0','0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0'];
+  f.innerHTML='<feImage href="'+lgMap(w,h,r,bz)+'" x="0" y="0" width="'+w+'" height="'+h+'" preserveAspectRatio="none" result="m"/>'+
+    mats.map(function(mx,c){return '<feDisplacementMap in="SourceGraphic" in2="m" scale="'+(s*(1-c*.08)).toFixed(1)+'" xChannelSelector="R" yChannelSelector="G" result="d'+c+'"/><feColorMatrix in="d'+c+'" type="matrix" values="'+mx+'" result="c'+c+'"/>'}).join('')+
+    '<feBlend in="c0" in2="c1" mode="screen" result="c01"/><feBlend in="c01" in2="c2" mode="screen"/>';
+  lgDefs().appendChild(f);LG.cache[key]=id;return id}
+function lgApply(force){var on=LG.on&&LG.ok;win.classList.toggle('lg',on);
+  $$('.glass',win).forEach(function(el){
+    if(!on){if(el.dataset.lgk){el.style.backdropFilter='';el.style.webkitBackdropFilter='';el.dataset.lgk=''}return}
+    var w=el.offsetWidth,hh=el.offsetHeight;if(!w||!hh)return;
+    var r=Math.round(Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius)||0,w/2,hh/2));
+    var key=w+'x'+hh+'r'+r;if(!force&&el.dataset.lgk===key)return;el.dataset.lgk=key;
+    var big=el.matches('.side,.pop,.ocard,.toast');
+    var bz=Math.round(Math.max(6,Math.min(big?26:Math.max(r*.9,10),hh/2))),sc=Math.round(big?46:Math.min(34,Math.max(14,hh*.55)));
+    var bf='url(#'+lgFilter(w,hh,r,bz,sc)+') blur('+(big?12:2.5)+'px) saturate(180%) brightness(1.06)';
+    el.style.backdropFilter=bf;el.style.webkitBackdropFilter=bf})}
+var lgT=0;addEventListener('resize',function(){clearTimeout(lgT);lgT=setTimeout(function(){lgApply()},160)});
+
+/* ---------- açılış: yazı + ışık tozu ---------- */
+function playIntro(){var old=$('.intro');if(old)old.remove();
+  var o=h('div','intro');o.setAttribute('aria-label','Perde açılışı');var qq=QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  o.innerHTML='<canvas></canvas><div class="iword"><h2>PERDE</h2><div class="ilines"><i></i><i></i><i></i><i></i></div><div class="iquote"><q>'+esc(qq[0])+'</q><small>by '+esc(qq[1])+'</small></div></div><div class="iprompt"><span>Devam etmek için tıkla ya da</span><kbd>return ↩</kbd><span>tuşuna bas</span></div>';
+  win.appendChild(o);
+  var sc=o.querySelector('canvas'),sx=sc.getContext('2d'),word=o.querySelector('h2'),lines=$$('.ilines i',o),sub=o.querySelector('.iquote'),pr=o.querySelector('.iprompt');
+  var D=Math.min(1.5,devicePixelRatio||1),W=win.clientWidth,H=win.clientHeight;
+  sc.width=W*D;sc.height=H*D;sx.setTransform(D,0,0,D,0,0);
+  var r=rng(7),parts=[],wy=word.getBoundingClientRect().bottom-win.getBoundingClientRect().top+28,band=Math.min(W*.8,640);
+  for(var i=0;i<560;i++){var b=i<460;parts.push({x:b?W/2+(r()-.5)*band:r()*W,y:b?wy+r()*170:r()*H,s:.35+r()*(b?.9:1.2),ph:r()*6.28,sp:1+r()*3,vx:(r()-.5)*.12,vy:(r()-.5)*.12,b:b})}
+  function ease(v){v=Math.max(0,Math.min(1,v));return v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2}
+  var t0=performance.now(),done=false,raf=0;
+  function frame(now){if(done)return;var t=(now-t0)/1000;
+    sx.clearRect(0,0,W,H);var sOn=ease((t-.3)/1.2);sx.fillStyle='#fff';
+    parts.forEach(function(p){p.x+=p.vx;p.y+=p.vy;var a=.35+.65*(.5+.5*Math.sin(t*p.sp+p.ph)),m=.22;
+      if(p.b){var dx=(p.x-W/2)/(band/2),dy=(p.y-wy)/190;m=Math.max(0,1-(dx*dx+dy*dy))}
+      sx.globalAlpha=a*m*sOn;sx.beginPath();sx.arc(p.x,p.y,p.s,0,7);sx.fill()});
+    sx.globalAlpha=1;
+    var w=ease((t-.4)/1.1),ls=(.5-.18*w)+'em';word.style.opacity=w;word.style.transform='translateY('+(14*(1-w))+'px)';word.style.filter='blur('+(10*(1-w)).toFixed(2)+'px)';word.style.letterSpacing=ls;word.style.paddingLeft=ls;
+    lines.forEach(function(li,k){li.style.transform='scaleX('+ease((t-.9-k*.08)/.9)+')'});
+    var qv=ease((t-1.6)/1);sub.style.opacity=qv;sub.style.transform='translateY('+(10*(1-qv))+'px)';
+    if(t<3.4)pr.style.opacity=ease((t-2.6)/.8);else if(!pr.classList.contains('on')){pr.style.opacity='';pr.classList.add('on')}
+    raf=requestAnimationFrame(frame)}
+  function key(e){if(e.key==='Enter'||e.key===' '||e.key==='Escape'){e.preventDefault();finish()}}
+  function finish(){if(done)return;done=true;cancelAnimationFrame(raf);removeEventListener('keydown',key,true);o.classList.add('out');setTimeout(function(){o.remove()},1000)}
+  o.addEventListener('click',finish);addEventListener('keydown',key,true);
+  if(RM){word.style.opacity=1;sub.style.opacity=1;pr.style.opacity=1}else raf=requestAnimationFrame(frame);
+}
+
+/* ---------- dosyalar: cam klasörler ---------- */
+var GF_BACK="M0 56A22 22 0 0 1 22 34L146 34C170 34 172 0 198 0L318 0A22 22 0 0 1 340 22L340 250A22 22 0 0 1 318 272L22 272A22 22 0 0 1 0 250Z";
+var GF_FRONT="M0 22A22 22 0 0 1 22 0L118 0C144 0 146 32 172 32L318 32A22 22 0 0 1 340 54L340 176A22 22 0 0 1 318 198L22 198A22 22 0 0 1 0 176Z";
+var FOLDERS=[
+  {label:'PixelVault',meta:'12 film · 128 GB',art:'dune-part-two',films:['dune-part-two','blade-runner-2049','la-la-land','interstellar'],menu:[["Finder'da göster"],['Yeniden tara']]},
+  {label:'4K Ultra HD',meta:'Akıllı klasör · 8 film',art:'mad-max-fury-road',films:['mad-max-fury-road','arrival','little-women','oppenheimer'],menu:[['Ölçütleri düzenle']]},
+  {label:'Eşleşme bekleyen',meta:'4 dosya · onay bekliyor',art:null,paper:[['Bir.Gece.Daha.2026.mkv','4,6 GB'],['Kayip.Sehir.2025.mkv','4,7 GB'],['Sonbahar.Yolu.mp4','1,9 GB'],['Mavi.Kapi.2024.mkv','5,0 GB']],menu:[['Hepsini otomatik eşle'],['Elle eşle']]},
+  {label:'Fazla dosyalar',meta:'190 dosya · 5,2 MB',art:null,paper:[['afis-kucuk.jpg','52 KB'],['Bilgi.txt','1 KB'],['Okubeni.txt','1 KB'],['kapak.jpg','52 KB']],menu:[["Finder'da göster"],['Hepsini sil',1]]}
+];
+function shortName(f){return fileName(f).replace(/\.(2160p|1080p).*\.(mkv|mp4)$/,'.$2')}
+function folderEl(c,i,width){var k=width/340,el=h('div','gf');el.style.width=width+'px';el.style.height=Math.round((272+54)*k)+'px';
+  var files=c.films?c.films.map(function(id){var f=F[id];return{id:id,name:shortName(f),meta:f.gb.toFixed(1).replace('.',',')+' GB'}}):c.paper.map(function(p){return{name:p[0],meta:p[1]}});
+  var n=files.length,sheets=files.map(function(fl,v){var slot=n<=1?0:(v/(n-1))*2-1,r=rng(hash(fl.name));
+    return '<button class="gf-sheet'+(fl.id?' art':'')+'"'+(fl.id?' data-fid="'+fl.id+'" aria-label="'+esc(F[fl.id].t)+' filmini aç"':' tabindex="-1"')+' style="--gf-slot:'+slot+';--gf-depth:'+(n-1-v)+';--gf-jx:'+((r()-.5)*10).toFixed(2)+'px;--gf-jr:'+((r()-.5)*3.2).toFixed(2)+'deg;z-index:'+(v+1)+'">'+
+      (fl.id?'<img alt="" data-wide="'+fl.id+'">':'<span class="gf-lines"><i style="width:86%"></i><i style="width:92%"></i><i style="width:64%"></i><i style="width:88%"></i><i style="width:42%"></i></span>')+
+      '<span class="gf-head"><span class="gf-name">'+esc(fl.name)+'</span><span class="gf-fmeta">'+esc(fl.meta)+'</span></span></button>'}).join('');
+  el.innerHTML='<div class="gf-stage" style="transform:translateY('+(54*k).toFixed(1)+'px) scale('+k.toFixed(4)+')"><div class="gf-tilt"><div class="gf-shadow"></div>'+
+    '<div class="gf-back" style="clip-path:path(\''+GF_BACK+'\')">'+(c.art?'<img class="gf-art" alt="" data-wide="'+c.art+'">':'')+'<div class="gf-sheen"></div></div>'+
+    '<svg class="gf-rim b" viewBox="0 0 340 272" aria-hidden="true"><path d="'+GF_BACK+'"/></svg><div class="gf-files">'+sheets+'</div>'+
+    '<div class="gf-front" style="clip-path:path(\''+GF_FRONT+'\')"><div class="gf-tint"></div><div class="gf-spec"></div><svg class="gf-rim f" viewBox="0 0 340 198" aria-hidden="true"><defs><linearGradient id="gfr'+i+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".35" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient></defs><path d="'+GF_FRONT+'" stroke="url(#gfr'+i+')"/></svg>'+
+    '<button class="gf-hit" aria-expanded="false" aria-label="'+esc(c.label)+' klasörünü aç"></button><div class="gf-label"><span class="gf-title">'+esc(c.label)+'</span><span class="gf-meta">'+esc(c.meta)+'</span></div></div>'+
+    '<button class="gf-key" aria-label="'+esc(c.label)+' için diğer seçenekler" aria-haspopup="menu"><svg viewBox="0 0 30 12"><rect x="1" y="1.5" width="8" height="9" rx="3.4"/><rect x="11" y="1.5" width="8" height="9" rx="3.4"/><rect x="21" y="1.5" width="8" height="9" rx="3.4"/></svg></button>'+
+    '<div class="gf-menu" role="menu"><button class="gf-mi" role="menuitem" data-mi="toggle">Klasörü aç</button>'+c.menu.map(function(m){return '<button class="gf-mi'+(m[1]?' danger':'')+'" role="menuitem" data-mi="'+esc(m[0])+'">'+esc(m[0])+'</button>'}).join('')+'</div></div></div>';
+  el.addEventListener('pointermove',function(e){if(e.pointerType==='touch')return;var b=el.getBoundingClientRect();el.style.setProperty('--gf-px',(((e.clientX-b.left)/b.width)*2-1).toFixed(3));el.style.setProperty('--gf-py',(((e.clientY-b.top)/b.height)*2-1).toFixed(3))});
+  el.addEventListener('pointerleave',function(){el.style.setProperty('--gf-px',0);el.style.setProperty('--gf-py',0)});
+  return el}
+function gfOpen(el,on){$$('.gf[data-open]').forEach(function(o){if(o!==el){o.removeAttribute('data-open');o.querySelector('.gf-hit').setAttribute('aria-expanded','false');o.querySelector('[data-mi=toggle]').textContent='Klasörü aç'}});
+  if(on)el.setAttribute('data-open','');else el.removeAttribute('data-open');el.querySelector('.gf-hit').setAttribute('aria-expanded',on?'true':'false');el.querySelector('[data-mi=toggle]').textContent=on?'Klasörü kapat':'Klasörü aç'}
+function renderFiles(){var v=h('div','view');v.id='v-files';
+  v.appendChild(h('div','ghead pad','<h2>Dosyalar</h2><p>PixelVault diski ve akıllı klasörler. Üstüne gel, tıkla, dosyaya dokun.</p>'));
+  var g=h('div','fgrid pad'),wd=innerWidth<860?250:300;FOLDERS.forEach(function(c,i){g.appendChild(folderEl(c,i,wd))});v.appendChild(g);
+  v.appendChild(h('div','pad fhint','Üstüne gel: kapak eğilir · Tıkla: dosyalar açılır · ··· menü'));v.appendChild(h('div','foot pad',''));
+  return v}
+function filesClick(e){
+  var gf=e.target.closest('.gf');
+  if(!gf){$$('.gf[data-open]').forEach(function(o){gfOpen(o,false)});$$('.gf-menu[data-open]').forEach(function(m){m.removeAttribute('data-open')});return false}
+  var menu=gf.querySelector('.gf-menu');
+  if(e.target.closest('.gf-key')){if(menu.hasAttribute('data-open'))menu.removeAttribute('data-open');else{menu.setAttribute('data-open','');menu.querySelector('.gf-mi').focus()}return true}
+  var mi=e.target.closest('.gf-mi');
+  if(mi){menu.removeAttribute('data-open');var a=mi.dataset.mi;
+    if(a==='toggle')gfOpen(gf,!gf.hasAttribute('data-open'));
+    else if(a==='Hepsini sil')toast("190 fazla dosya silindi",'check');
+    else toast(a,'folder');
+    return true}
+  if(e.target.closest('.gf-hit')){menu.removeAttribute('data-open');gfOpen(gf,!gf.hasAttribute('data-open'));return true}
+  var sh=e.target.closest('.gf-sheet[data-fid]');
+  if(sh&&gf.hasAttribute('data-open')){openDetail(sh.dataset.fid,sh);return true}
+  if(sh){gfOpen(gf,true);return true}
+  return true}
+
+/* ---------- state ---------- */
+var win=$('#win'),content=$('#content'),state={view:'home',prev:'home',film:'dune-part-two',filter:'all',tr:false,cont:false,query:'',gmode:'movies'},scrollMem={};
+function setWH(){win.style.setProperty('--wh',win.clientHeight+'px')}
+setWH();addEventListener('resize',setWH);
+function amb(f){win.style.setProperty('--a1',f.pal[1]);win.style.setProperty('--a2',f.pal[0])}
+function toast(msg,icon){var t=$('#toast');t.innerHTML=(icon?ic(icon):'')+esc(msg);t.classList.add('on');lgApply();clearTimeout(toast.tm);toast.tm=setTimeout(function(){t.classList.remove('on')},2200)}
+
+/* ---------- components ---------- */
+function posterCard(f){
+  var b=h('button','pc');b.dataset.id=f.id;b.style.setProperty('--c',f.pal[1]);b.setAttribute('aria-label',f.t+', '+f.y);
+  var chips='<span class="chip">'+(f.q==='4K'?'4K':'HD')+'</span>'+((f.tr!=='none')?'<span class="chip">TR</span>':'');
+  b.innerHTML='<div class="pimg" style="--g:'+bgFor(f)+'"><img alt="" data-art="'+f.id+'"><span class="shine"></span><div class="chips">'+chips+'</div>'+(f.seen?'<span class="seen">'+ic('check')+'</span>':'')+(f.prog?'<div class="prog"><i style="width:'+f.prog*100+'%"></i></div>':'')+'</div><span class="pt">'+esc(f.t)+'</span><span class="py">'+f.y+'</span>';
+  if(f.prog)b.querySelector('.chips').style.bottom='16px';
+  return b;
+}
+function contCard(f){
+  var b=h('button','cc');b.dataset.id=f.id;b.dataset.act='play';b.setAttribute('aria-label',f.t+' izlemeye devam et');
+  var left=f.run?Math.round(f.run*(1-f.prog))+' dk kaldı':'';
+  b.innerHTML='<div class="cimg" style="--g:'+bgFor(f)+'"><img alt="" data-wide="'+f.id+'"><div class="cplay"><span class="glass">'+ic('play',1)+'</span></div><div class="cmeta"><b>'+esc(f.t)+'</b><small>'+left+'</small><div class="prog"><i style="width:'+f.prog*100+'%"></i></div></div></div>';
+  return b;
+}
+function hydrate(root){
+  $$('img[data-art]',root).forEach(function(im){var f=F[im.dataset.art];requestAnimationFrame(function(){im.src=art(f,'p');im.onload=function(){im.classList.add('ld')}})});
+  $$('img[data-wide]',root).forEach(function(im){var f=F[im.dataset.wide];requestAnimationFrame(function(){im.src=art(f,'w');im.onload=function(){im.classList.add('ld')}})});
+}
+function rail(title,sub,nodes){
+  var r=h('section','row');r.innerHTML='<div class="rh pad"><h3>'+esc(title)+'</h3>'+(sub?'<span>'+esc(sub)+'</span>':'')+'</div>';
+  var rl=h('div','rail');nodes.forEach(function(n){rl.appendChild(n)});r.appendChild(rl);
+  var l=h('button','rnav l glass',ic('chl')),rr=h('button','rnav r glass',ic('chr'));l.setAttribute('aria-label','Geri kaydır');rr.setAttribute('aria-label','İleri kaydır');
+  l.onclick=function(){rl.scrollBy({left:-rl.clientWidth*.8,behavior:'smooth'})};rr.onclick=function(){rl.scrollBy({left:rl.clientWidth*.8,behavior:'smooth'})};
+  r.appendChild(l);r.appendChild(rr);return r;
+}
+
+/* ---------- views ---------- */
+var heroIds=['dune-part-two','blade-runner-2049','the-grand-budapest-hotel','spirited-away'],heroI=0,heroTm=null,HERO_MS=8000;
+function renderHome(){
+  var v=h('div','view');v.id='v-home';
+  var hero=h('section','hero');
+  heroIds.forEach(function(id,i){var s=h('div','slide'+(i===heroI?' on':''));s.innerHTML='<img alt="" data-wide="'+id+'">';hero.appendChild(s)});
+  var info=h('div','hinfo');hero.appendChild(info);
+  var hl=h('button','harr l glass',ic('chl')),hr=h('button','harr r glass',ic('chr'));hl.setAttribute('aria-label','Önceki');hr.setAttribute('aria-label','Sonraki');hl.onclick=function(){heroGo(heroI-1)};hr.onclick=function(){heroGo(heroI+1)};hero.appendChild(hl);hero.appendChild(hr);
+  var dots=h('div','dots');heroIds.forEach(function(id,i){var d=h('button',i===heroI?'on':'');d.setAttribute('aria-label',F[id].t);d.onclick=function(){heroGo(i)};dots.appendChild(d)});hero.appendChild(dots);
+  hero.addEventListener('mouseenter',function(){hero.classList.add('paused');clearTimeout(heroTm)});
+  hero.addEventListener('mouseleave',function(){hero.classList.remove('paused');heroSched()});
+  v.appendChild(hero);
+  var C=['oppenheimer','la-la-land','parasite'].map(function(id){return contCard(F[id])});
+  v.appendChild(rail('İzlemeye devam et','',C));
+  var recent=films.slice().sort(function(a,b){return a.add-b.add}).slice(0,10).map(posterCard);
+  v.appendChild(rail('Yeni eklenenler','PixelVault · son 7 gün',recent));
+  var fk=films.filter(function(f){return f.q==='4K'}).map(posterCard);
+  v.appendChild(rail('4K Ultra HD',fk.length+' film',fk));
+  var coll=h('section','row');coll.innerHTML='<div class="rh pad"><h3>Koleksiyonlar</h3><span>TMDB koleksiyonları ve akıllı listeler</span></div>';
+  var cr=h('div','rail');
+  [['Denis Villeneuve','Akıllı liste · 3 film',['dune-part-two','blade-runner-2049','arrival']],['Uzay ve zaman','Akıllı liste · 3 film',['interstellar','arrival','dune-part-two']],['Renkli masallar','Akıllı liste · 3 film',['the-grand-budapest-hotel','amelie','la-la-land']],['Aile gecesi','Akıllı liste · 3 film',['spirited-away','little-women','amelie']]].forEach(function(c){
+    var b=h('button','stack');b.dataset.id=c[2][1];b.setAttribute('aria-label',c[0]);
+    b.innerHTML=c[2].map(function(id){return '<div class="sc" style="background:'+bgFor(F[id])+'"><img alt="" data-art="'+id+'"></div>'}).join('')+'<span class="sl">'+esc(c[0])+'<small>'+esc(c[1])+'</small></span>';cr.appendChild(b)});
+  coll.appendChild(cr);v.appendChild(coll);
+  var dram=films.filter(function(f){return /Dram/.test(f.g)}).map(posterCard);
+  v.appendChild(rail('Dram','',dram));
+  var foot=h('div','foot pad',ic('globe')+'<span>Film bilgileri ve görseller TMDB\'den. Bu ürün TMDB API\'sini kullanır ancak TMDB tarafından onaylanmamıştır.</span>');v.appendChild(foot);
+  return v;
+}
+function heroInfo(){
+  var f=F[heroIds[heroI]],info=$('.hinfo');if(!info)return;
+  info.innerHTML='<span class="eyeb">'+(f.add<=3?'<span class="newb">YENİ</span>':'')+'<span>'+(f.add<=3?'Yeni eklendi':'Kütüphanenden')+'</span></span><h2 class="logo '+f.font+'">'+esc(f.t)+'</h2>'+
+   '<div class="meta"><span>'+f.y+'</span>'+(f.run?'<span>'+runText(f.run)+'</span>':'')+'<span class="q">'+(f.q==='4K'?'4K':'HD')+'</span><span class="q">'+f.au+'</span>'+(f.tr!=='none'?'<span class="q">TR</span>':'')+'<span>'+esc(f.g)+'</span></div>'+
+   '<p class="ov">'+esc(f.ov)+'</p><span class="starring"><span>Başrolde</span> <b>'+esc(f.cast.slice(0,3).join(', '))+'</b></span><div class="acts"><button class="play wide" data-act="play" data-id="'+f.id+'">'+ic('play',1)+'<span>Oynat</span></button><button class="gbtn glass'+(watch[f.id]?' on':'')+'" data-act="watch" data-id="'+f.id+'" aria-label="İzleme listesi">'+ic(watch[f.id]?'check':'plus')+'</button><button class="gbtn glass" data-act="open" data-id="'+f.id+'" aria-label="Ayrıntılar">'+ic('chr')+'</button></div>';
+  amb(f);requestAnimationFrame(function(){lgApply()});
+}
+function heroGo(i){heroI=(i+heroIds.length)%heroIds.length;$$('.hero .slide').forEach(function(s,k){s.classList.toggle('on',k===heroI)});$$('.hero .dots button').forEach(function(d,k){d.classList.toggle('on',k===heroI);if(k===heroI){d.style.animation='none';void d.offsetWidth;d.style.animation=''}});var dd=$$('.hero .dots button')[heroI];if(dd){var n=dd.cloneNode(true);n.onclick=dd.onclick;dd.replaceWith(n)}heroInfo();heroSched()}
+function heroSched(){clearTimeout(heroTm);if(RM)return;heroTm=setTimeout(function(){if(state.view==='home'&&!$('.hero.paused'))heroGo(heroI+1)},HERO_MS)}
+
+function renderGrid(){
+  var v=h('div','view');v.id='v-grid';
+  var hd=h('div','ghead pad');
+  hd.innerHTML='<h2 id="gtitle">Filmler</h2><p id="gcount"></p><div class="filters"><div class="seg" id="seg"'+(state.gmode==='uhd'?' hidden':'')+'><span class="thumb"></span><button data-f="all">Tümü</button><button data-f="4K">4K</button><button data-f="1080p">1080p</button></div><button class="tog" id="ftr">'+ic('check')+'Türkçe altyazı</button><button class="tog" id="fcont">'+ic('check')+'Devam eden</button></div>';
+  v.appendChild(hd);
+  var g=h('div','grid pad');g.id='grid';
+  films.slice().sort(state.gmode==='recent'?function(a,b){return a.add-b.add}:function(a,b){return a.t.localeCompare(b.t,'tr')}).forEach(function(f){g.appendChild(posterCard(f))});
+  g.appendChild(h('div','empty','Bu filtreyle eşleşen film yok.'));
+  v.appendChild(g);
+  return v;
+}
+function gridTitle(){var m=state.gmode;return m==='recent'?'Yeni Eklenenler':m==='uhd'?'4K HDR':m.indexOf('g:')===0?m.slice(2):'Filmler'}
+function renderGenres(){var v=h('div','view');v.id='v-genres';
+  v.appendChild(h('div','ghead pad','<h2>Türler</h2><p>'+Object.keys(GEN).length+' tür</p>'));
+  var g=h('div','gtiles pad'),seen={};
+  films.forEach(function(f){f.g.split(', ').forEach(function(x){(seen[x]=seen[x]||[]).push(f)})});
+  Object.keys(seen).sort(function(a,b){return seen[b].length-seen[a].length}).forEach(function(x){var f=seen[x][0],t=h('button','gtile');t.dataset.genre=x;
+    t.style.background='radial-gradient(120% 120% at 100% 0%,'+rgba(f.pal[1],.85)+',transparent 62%),linear-gradient(160deg,'+f.pal[0]+','+f.pal[3]+')';
+    t.innerHTML='<b>'+esc(x)+'</b><small>'+seen[x].length+' film</small>';g.appendChild(t)});
+  v.appendChild(g);v.appendChild(h('div','foot pad',''));return v}
+function navKey(v){if(v==='grid'){var m=state.gmode;return m==='movies'?'grid':m.indexOf('g:')===0?'genres':m}return v}
+function segThumb(){var s=$('#seg');if(!s)return;var on=$('button.on',s)||$('button',s),t=$('.thumb',s);t.style.left=on.offsetLeft+'px';t.style.width=on.offsetWidth+'px'}
+function applyFilter(animate){
+  var g=$('#grid');if(!g)return;var cards=$$('.pc',g),first={};
+  if(animate&&!RM)cards.forEach(function(c){if(!c.hidden)first[c.dataset.id]=c.getBoundingClientRect()});
+  var q=state.query.trim().toLocaleLowerCase('tr'),n=0;
+  cards.forEach(function(c){var f=F[c.dataset.id];var gm=state.gmode,ok=(gm!=='uhd'||f.q==='4K')&&(gm.indexOf('g:')!==0||f.g.split(', ').indexOf(gm.slice(2))>-1)&&(gm==='uhd'||state.filter==='all'||f.q===state.filter)&&(!state.tr||f.tr!=='none')&&(!state.cont||f.prog)&&(!q||f.t.toLocaleLowerCase('tr').indexOf(q)>-1||f.dir.toLocaleLowerCase('tr').indexOf(q)>-1||f.cast.join(' ').toLocaleLowerCase('tr').indexOf(q)>-1);c.hidden=!ok;if(ok)n++});
+  $('.empty',g).hidden=n>0;
+  $('#gcount').textContent=q?('"'+state.query+'" için '+n+' sonuç'):state.gmode==='movies'?(n+' film'):(n+' film');
+  $('#gtitle').textContent=q?'Arama':gridTitle();
+  $$('#seg button').forEach(function(b){b.classList.toggle('on',b.dataset.f===state.filter)});segThumb();
+  $('#ftr').classList.toggle('on',state.tr);$('#fcont').classList.toggle('on',state.cont);
+  if(animate&&!RM)cards.forEach(function(c){if(c.hidden)return;var r=c.getBoundingClientRect(),o=first[c.dataset.id];
+    if(o){var dx=o.left-r.left,dy=o.top-r.top;if(dx||dy)c.animate([{transform:'translate('+dx+'px,'+dy+'px)'},{transform:'none'}],{duration:520,easing:'cubic-bezier(.2,.8,.2,1)'})}
+    else c.animate([{opacity:0,transform:'scale(.9)'},{opacity:1,transform:'none'}],{duration:420,easing:'cubic-bezier(.2,.8,.2,1)'})});
+}
+
+function initials(n){return n.split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0]}).join('').toUpperCase()}
+function renderDetail(){
+  var f=F[state.film],v=h('div','view');v.id='v-detail';
+  var dh=h('section','dhero');
+  dh.innerHTML='<div class="dbg"><img alt="" data-wide="'+f.id+'"></div><div class="dinfo">'+
+   logoHtml(f)+
+   '<div class="meta"><span>'+f.y+'</span>'+(f.run?'<span>'+runText(f.run)+'</span>':'')+'<span class="q">'+(f.q==='4K'?'4K':'HD')+'</span><span class="q">'+f.au+'</span><span>'+esc(f.g)+'</span></div>'+
+   (SC[f.id]?'<div class="ratings"><span class="rt"><i class="tmdb">TMDB</i>'+SC[f.id].tmdb.toFixed(1)+'</span><span class="rt"><i class="imdb">IMDb</i>'+SC[f.id].imdb.toFixed(1)+'</span>'+(SC[f.id].rt?'<span class="rt"><i class="rtm">RT</i>'+SC[f.id].rt+'%</span>':'')+'<span class="rt"><i class="mc">MC</i>'+SC[f.id].meta+'</span></div>':'')+
+   '<p class="ov">'+esc(f.ov)+'</p>'+
+   '<div class="acts"><button class="play wide" data-act="play" data-id="'+f.id+'">'+ic('play',1)+'<span>'+(f.prog?'Devam et'+(f.run?' · '+Math.round(f.run*(1-f.prog))+' dk':''):'Oynat')+'</span></button>'+
+   '<button class="gbtn glass'+(watch[f.id]?' on':'')+'" data-act="watch" data-id="'+f.id+'" aria-label="İzleme listesi">'+ic(watch[f.id]?'check':'plus')+'</button>'+
+   '<button class="gbtn glass'+(f.seen?' on':'')+'" data-act="seen" data-id="'+f.id+'" aria-label="İzlendi olarak işaretle">'+ic('eye')+'</button>'+
+   '<button class="gbtn glass" data-act="trailer" aria-label="Fragman">'+ic('trailer')+'</button>'+
+   '<button class="gbtn glass" aria-label="Diğer">'+ic('dots')+'</button></div>'+
+   '<span class="who"><span>Başrolde</span> <b>'+esc(f.cast.slice(0,3).join(', '))+'</b> · <span>Yönetmen</span> <b>'+esc(f.dir)+'</b></span></div>';
+  v.appendChild(dh);
+  var body=h('div','pad');
+  var cs=h('section','dsec');cs.innerHTML='<h3>Oyuncular ve ekip</h3>';var cl=h('div','cast');
+  [[f.dir,'Yönetmen']].concat(f.cast.map(function(c){return[c,'Oyuncu']})).forEach(function(p,i){var hu=hash(p[0])%360;var d=h('div','person','<span class="av" style="background:linear-gradient(145deg,hsl('+hu+' 40% 42%),hsl('+(hu+40)%360+' 45% 18%))">'+initials(p[0])+'</span><b>'+esc(p[0])+'</b><small>'+p[1]+'</small>');cl.appendChild(d)});
+  cs.appendChild(cl);body.appendChild(cs);
+  var cards=h('section','dsec');cards.innerHTML='<h3>Altyazı, ses ve dosya</h3>';var cg=h('div','cards');
+  var sub=h('div','card');var rows='<h4>Altyazılar</h4>';
+  if(f.tr==='online')rows+='<div class="srow"><span class="lang">Türkçe</span><small>OpenSubtitles · dosya özetiyle eşleşir</small><span class="r"><button class="fetch" id="fetch">İndir</button></span></div>';
+  else if(f.tr==='none')rows+='<div class="srow"><span class="lang">Türkçe</span><small>Henüz bulunamadı · her gün yeniden aranır</small><span class="r"><button class="fetch" id="fetch">Yeniden ara</button></span></div>';
+  else rows+='<div class="srow"><span class="lang">Türkçe</span><small>OpenSubtitles</small><span class="r"><button class="fetch" id="fetch">İndir</button></span></div>';
+  if(f.trDone)rows=rows.replace(/<div class="srow"><span class="lang">Türkçe<\/span>.*?<\/div>/,'<div class="srow"><span class="lang">Türkçe</span><small>İndirildi · filmin yanında</small><span class="r" style="color:var(--live)">'+ic('check')+'</span></div>');
+  (f.local||[]).forEach(function(l){rows+='<div class="srow"><span class="lang">'+esc(l)+'</span><small>Diskte, filmin yanında</small><span class="r" style="color:var(--ink-3)">'+ic('check')+'</span></div>'});
+  sub.innerHTML=rows;cg.appendChild(sub);
+  var au=h('div','card','<h4>Ses</h4><div class="srow"><span class="lang">English</span><small>AAC '+f.au+' · varsayılan</small><span class="r">'+ic('check')+'</span></div><div class="srow"><span class="lang">Diyalog netliği</span><small>Konuşmaları öne çıkarır</small><span class="r"><span class="sw" role="switch" aria-checked="false" tabindex="0"></span></span></div>');cg.appendChild(au);
+  var fl=h('div','card','<h4>Dosya</h4><div class="tech"><span>'+(f.q==='4K'?'2160p':'1080p')+'</span><span>'+codec(f)+'</span><span>AAC '+f.au+'</span><span>'+f.src+'</span><span>'+f.gb.toFixed(1).replace('.',',')+' GB</span></div><span class="fname">PixelVault › '+esc(fileName(f))+'</span>');cg.appendChild(fl);
+  cards.appendChild(cg);body.appendChild(cards);
+  v.appendChild(body);
+  var more=films.filter(function(x){return x.id!==f.id&&x.g.split(', ').some(function(gg){return f.g.indexOf(gg)>-1})}).slice(0,10).map(posterCard);
+  if(more.length)v.appendChild(rail('Kütüphanende benzerleri','',more));
+  v.appendChild(h('div','foot pad',''));
+  return v;
+}
+
+/* ---------- navigation ---------- */
+function setNav(){var k=navKey(state.view==='detail'?state.prev:state.view);$$('.nav').forEach(function(n){n.classList.toggle('on',n.dataset.nav===k)});
+  $('#back').classList.toggle('on',state.view==='detail');
+}
+function show(view,opts){
+  opts=opts||{};
+  if(state.view!=='detail')scrollMem[state.view]=content.scrollTop;
+  if(view==='detail'&&state.view!=='detail')state.prev=state.view;
+  state.view=view;content.innerHTML='';clearTimeout(heroTm);
+  var v=view==='home'?renderHome():view==='grid'?renderGrid():view==='genres'?renderGenres():view==='files'?renderFiles():renderDetail();
+  if(opts.noAnim)v.style.animation='none';
+  content.appendChild(v);hydrate(v);
+  content.scrollTop=(view==='detail')?0:(scrollMem[view]||0);
+  if(view==='home'){heroInfo();heroSched()}
+  if(view==='grid'){applyFilter(false);requestAnimationFrame(segThumb)}
+  if(view==='detail'){amb(F[state.film]);bindFetch()}
+  if(view==='genres')amb(F['blade-runner-2049']);
+  if(view==='files'){amb(F['dune-part-two']);$$('.gf',v).forEach(function(g,i){setTimeout(function(){g.setAttribute('data-entered','')},RM?0:120+i*140)})}
+  setNav();onScroll();requestAnimationFrame(function(){lgApply()});
+  if(innerWidth<=860)$('#side').classList.remove('open');
+}
+function openDetail(id,fromEl){
+  state.film=id;
+  /* Derinlik: kütüphane geri çekilip bulanıklaşır, film sayfası hafif büyükten yerine oturur (uygulamadaki geçiş). */
+  if(RM){show('detail');return}
+  content.animate([{transform:'scale(1)',filter:'blur(0)',opacity:1},{transform:'scale(.94)',filter:'blur(10px)',opacity:0}],{duration:240,easing:'cubic-bezier(.32,.72,0,1)',fill:'forwards'}).onfinish=function(){
+    show('detail',{noAnim:true});content.getAnimations().forEach(function(a){a.cancel()});
+    content.animate([{transform:'scale(1.06)',opacity:0},{transform:'scale(1)',opacity:1}],{duration:480,easing:'cubic-bezier(.2,.9,.25,1)'});
+  };
+}
+function goBack(){var to=state.prev||'home';
+  if(RM||state.view!=='detail'){show(to);return}
+  content.animate([{transform:'scale(1)',opacity:1},{transform:'scale(1.06)',opacity:0}],{duration:220,easing:'cubic-bezier(.32,.72,0,1)',fill:'forwards'}).onfinish=function(){
+    show(to,{noAnim:true});content.getAnimations().forEach(function(a){a.cancel()});
+    content.animate([{transform:'scale(.94)',filter:'blur(10px)',opacity:0},{transform:'scale(1)',filter:'blur(0)',opacity:1}],{duration:480,easing:'cubic-bezier(.2,.9,.25,1)'});
+  };
+}
+
+/* ---------- scroll ---------- */
+function onScroll(){var y=content.scrollTop;$('#edge').classList.toggle('on',y>12);
+  var t=$('#btitle');if(state.view==='detail'){t.textContent=F[state.film].t;t.classList.toggle('on',y>win.clientHeight*.55)}else if(state.view==='grid'){t.textContent=$('#gtitle')?$('#gtitle').textContent:'Filmler';t.classList.toggle('on',y>70)}else if(state.view==='genres'){t.textContent='Türler';t.classList.toggle('on',y>70)}else if(state.view==='files'){t.textContent='Dosyalar';t.classList.toggle('on',y>70)}else{t.textContent='Ana Sayfa';t.classList.toggle('on',y>win.clientHeight*.62)}}
+content.addEventListener('scroll',onScroll,{passive:true});
+
+/* ---------- events ---------- */
+content.addEventListener('click',function(e){
+  if(state.view==='files'&&filesClick(e))return;
+  var gt=e.target.closest('.gtile');if(gt){state.gmode='g:'+gt.dataset.genre;state.filter='all';show('grid');return}
+  var a=e.target.closest('[data-act]'),card=e.target.closest('.pc,.stack');
+  if(a){var id=a.dataset.id,act=a.dataset.act;
+    if(act==='play'){e.stopPropagation();openPlayer(id||state.film);return}
+    if(act==='open'){openDetail(id,null);return}
+    if(act==='watch'){watch[id]=!watch[id];a.classList.toggle('on',!!watch[id]);a.innerHTML=ic(watch[id]?'check':'plus');$('#wlc').textContent=Object.keys(watch).filter(function(k){return watch[k]}).length;toast(watch[id]?'İzleme listesine eklendi':'İzleme listesinden çıkarıldı',watch[id]?'check':'x');return}
+    if(act==='seen'){var f=F[id];f.seen=!f.seen;a.classList.toggle('on',!!f.seen);toast(f.seen?'İzlendi olarak işaretlendi':'İzlenmedi olarak işaretlendi','eye');return}
+    if(act==='trailer'){toast('Fragman TMDB üzerinden YouTube\'da açılır','trailer');return}
+  }
+  if(card){openDetail(card.dataset.id,card.classList.contains('stack')?card.querySelector('.sc:nth-child(2)'):card);return}
+  var segb=e.target.closest('#seg button');if(segb){state.filter=segb.dataset.f;applyFilter(true);return}
+  if(e.target.closest('#ftr')){state.tr=!state.tr;applyFilter(true);return}
+  if(e.target.closest('#fcont')){state.cont=!state.cont;applyFilter(true);return}
+  var sw=e.target.closest('.sw');if(sw){sw.classList.toggle('on');sw.setAttribute('aria-checked',sw.classList.contains('on'))}
+});
+content.addEventListener('pointermove',function(e){var p=e.target.closest('.pc');if(!p||RM)return;var im=p.querySelector('.pimg'),r=im.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+  im.style.setProperty('--mx',px*100+'%');im.style.setProperty('--my',py*100+'%');im.style.transform='translateY(-6px) scale(1.04) rotateX('+((.5-py)*8).toFixed(2)+'deg) rotateY('+((px-.5)*10).toFixed(2)+'deg)';
+  if(state.view==='grid'&&amb.last!==p.dataset.id){amb.last=p.dataset.id;clearTimeout(amb.tm);amb.tm=setTimeout(function(){amb(F[p.dataset.id])},180)}});
+content.addEventListener('pointerout',function(e){var p=e.target.closest('.pc');if(p&&!p.contains(e.relatedTarget)){p.querySelector('.pimg').style.transform=''}});
+function bindFetch(){var b=$('#fetch');if(!b)return;b.onclick=function(){if(b.classList.contains('busy')||b.classList.contains('done'))return;var f=F[state.film];b.classList.add('busy');b.innerHTML='<span class="spin"></span>Aranıyor';
+  setTimeout(function(){if(f.tr==='none'){b.classList.remove('busy');b.textContent='Yeniden ara';toast('Türkçe altyazı henüz yok · yarın tekrar denenecek','globe');return}b.innerHTML='<span class="spin"></span>Bulundu · indiriliyor'},1100);
+  setTimeout(function(){if(f.tr==='none')return;b.classList.remove('busy');b.classList.add('done');b.innerHTML=ic('check')+'İndirildi';f.trDone=1;toast('Türkçe altyazı filmin yanına kaydedildi','check')},2000)}}
+
+$$('.nav').forEach(function(n){n.addEventListener('click',function(){var k=n.dataset.nav;
+  if(k==='home'||k==='files'||k==='genres'){state.query='';$('#q').value='';show(k)}
+  else if(k==='grid'||k==='recent'||k==='uhd'){state.query='';$('#q').value='';state.gmode=k==='grid'?'movies':k;state.filter='all';show('grid')}
+  else if(k==='shows'){toast('Diziler: S01E01 gibi işaretli bölümler tek dizide, sezon sezon toplanır','tv')}
+  else if(k==='settings')openSettings();
+  else if(k==='feedback')openFeedback();
+  else if(k==='list'){toast('İzleme listesi: '+$('#wlc').textContent+' film','mark')}
+  else if(k==='coll'){show('home');setTimeout(function(){var c=$$('.row')[3];if(c)content.scrollTo({top:c.offsetTop-70,behavior:'smooth'})},60)}
+  else if(k==='src'){toast('PixelVault bağlı · 12 film · son tarama 2 dk önce','disk')}
+  else if(k==='add'){toast('Klasör, ağ paylaşımı (SMB) ya da bulut klasörü eklenir','plus')}
+})});
+$('#back').onclick=goBack;
+$('#gview').onclick=function(){if(state.view!=='grid')state.gmode='movies';show(state.view==='grid'?'home':'grid')};
+$('#disk').onclick=function(){var d=$('#disk'),on=!d.classList.contains('open');d.classList.toggle('open',on);d.setAttribute('aria-expanded',on)};
+$('#refresh').onclick=function(){var b=$('#refresh');b.animate([{transform:'rotate(0)'},{transform:'rotate(360deg)'}],{duration:700,easing:'cubic-bezier(.2,.8,.2,1)'});toast('PixelVault tarandı · yeni film yok','sync')};
+$('#sbtoggle').onclick=function(){$('#side').classList.toggle('open')};
+$('#q').addEventListener('input',function(e){state.query=e.target.value;if(state.view!=='grid'){state.gmode='movies';show('grid')}else applyFilter(false)});
+
+/* ---------- player ---------- */
+var P=null;
+var LINES=['Işıkları kapatmadan önce sana bir şey söylemem lazım.','Söyle o zaman.','Bu gece her şey değişecek.','Hazır mısın?','Hiç olmadığım kadar.','O zaman gidelim.',''];
+var LINES_EN=['Before the lights go out, I need to tell you something.','Then tell me.','Tonight everything changes.','Are you ready?','More than ever.','Then let\'s go.',''];
+function openPlayer(id){
+  closePlayer(true);var f=F[id];state.film=id;amb(f);
+  var dur=(f.run||112)*60,start=f.prog?dur*f.prog:dur*.08;
+  var el=h('div','player');el.innerHTML='<canvas></canvas><div class="sub m shadow" id="sub"><span></span></div><div class="hud glass" id="hud"></div>'+
+   '<div class="pui"><div class="ptop"><button class="circ glass" data-p="close" aria-label="Kapat">'+ic('x')+'</button><div><b>'+esc(f.t)+'</b><br><small>'+f.y+' · '+(f.q==='4K'?'2160p':'1080p')+' · '+codec(f)+' · AAC '+f.au+'</small></div><span class="grow"></span><button class="circ glass" data-p="air" aria-label="AirPlay">'+ic('air')+'</button></div>'+
+   '<div class="ctrl glass"><div class="srow2"><span class="t" id="tc"></span><div class="scrub" id="scrub"><div class="track"><div class="buf"></div><div class="fill"></div></div><span class="knob"></span><div class="prev"><canvas width="352" height="198"></canvas><span></span></div></div><span class="t r" id="tl"></span></div>'+
+   '<div class="crow"><div class="lft"><button class="cb" data-p="sub" aria-label="Altyazı">'+ic('cc')+'</button><button class="cb opt-hide" data-p="aud" aria-label="Ses">'+ic('spk')+'</button><button class="cb" data-p="spd" id="spdb">1×</button></div>'+
+   '<div class="mid"><button class="cb opt-hide" data-p="b10" aria-label="10 saniye geri">'+ic('b10')+'</button><button class="cb big" data-p="pp" aria-label="Oynat/Duraklat" id="ppb">'+ic('pause',1)+'</button><button class="cb opt-hide" data-p="f10" aria-label="10 saniye ileri">'+ic('f10')+'</button></div>'+
+   '<div class="rgt"><button class="cb opt-hide" data-p="pip" aria-label="Resim içinde resim">'+ic('pip')+'</button><button class="cb opt-hide" data-p="gear" aria-label="Ayarlar">'+ic('gear')+'</button><button class="cb opt-hide" data-p="full" aria-label="Tam ekran">'+ic('full')+'</button></div></div></div></div>';
+  win.appendChild(el);
+  var cv=el.querySelector('canvas'),ctx=cv.getContext('2d'),bg=new Image();bg.src=art(f,'w');
+  P={el:el,f:f,dur:dur,t:start,playing:true,speed:1,raf:0,last:performance.now(),idleTm:0,bg:bg,cv:cv,ctx:ctx,subOn:1,delay:-0.5,size:'m',bgStyle:'shadow',pop:null,chapters:[.12,.31,.48,.66,.83]};
+  var trk=el.querySelector('.track');P.chapters.forEach(function(c){var d=h('span','ch');d.style.left=c*100+'%';trk.appendChild(d)});
+  function size(){var r=el.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);cv.width=r.width*d;cv.height=r.height*d}
+  size();P.resize=size;addEventListener('resize',size);
+  el.addEventListener('mousemove',wake);el.addEventListener('click',onPClick);
+  bindScrub();wake();tick();requestAnimationFrame(function(){lgApply()});
+}
+function frame(){var c=P.ctx,W=P.cv.width,H=P.cv.height;c.fillStyle='#000';c.fillRect(0,0,W,H);
+  if(P.bg.complete&&P.bg.naturalWidth){var k=1.06+Math.sin(P.t/40)*.04,iw=W*k,ih=iw*9/16;if(ih<H*k){ih=H*k;iw=ih*16/9}var ox=(W-iw)/2+Math.sin(P.t/23)*W*.02,oy=(H-ih)/2+Math.cos(P.t/31)*H*.02;c.drawImage(P.bg,ox,oy,iw,ih)}
+  var fl=.04+Math.random()*.03;c.fillStyle='rgba(0,0,0,'+fl+')';c.fillRect(0,0,W,H);
+  c.globalAlpha=.07;c.globalCompositeOperation='overlay';c.save();c.translate(Math.random()*160,Math.random()*160);c.fillStyle=c.createPattern(grainC,'repeat');c.fillRect(-160,-160,W+320,H+320);c.restore();c.globalAlpha=1;c.globalCompositeOperation='source-over';
+}
+function tick(){if(!P)return;var now=performance.now(),dt=(now-P.last)/1000;P.last=now;if(P.playing){P.t=Math.min(P.dur,P.t+dt*P.speed)}
+  frame();ui();P.raf=requestAnimationFrame(tick)}
+function ui(){var p=P.t/P.dur,el=P.el;el.querySelector('.fill').style.width=p*100+'%';el.querySelector('.buf').style.width=Math.min(100,p*100+9)+'%';el.querySelector('.knob').style.left=p*100+'%';
+  $('#tc',el).textContent=fmt(P.t);$('#tl',el).textContent='-'+fmt(P.dur-P.t);
+  var s=$('#sub',el),n=LINES.length,idx=((Math.floor((P.t+P.delay)/3.2)%n)+n)%n,line=P.subOn===1?LINES[idx]:P.subOn===2?LINES_EN[idx]:'';if(s.dataset.l!==line){s.dataset.l=line;s.firstChild.textContent=line;s.style.opacity=line?1:0}
+  s.className='sub '+P.size+' '+P.bgStyle;}
+function wake(){if(!P)return;P.el.classList.remove('idle');clearTimeout(P.idleTm);P.idleTm=setTimeout(function(){if(P&&P.playing&&!P.pop)P.el.classList.add('idle')},2600)}
+function hud(html){var hd=$('#hud',P.el);hd.innerHTML=html;hd.classList.remove('go');void hd.offsetWidth;hd.classList.add('go')}
+function togglePlay(){P.playing=!P.playing;$('#ppb',P.el).innerHTML=ic(P.playing?'pause':'play',1);hud(ic(P.playing?'play':'pause',1));wake()}
+function seek(d){P.t=Math.max(0,Math.min(P.dur,P.t+d));hud('<span>'+(d>0?'+':'−')+Math.abs(d)+' sn</span>');wake()}
+function closePop(){if(P&&P.pop){P.pop.remove();P.pop=null;$$('.cb.on',P.el).forEach(function(b){b.classList.remove('on')})}}
+function openPop(kind,btn){var was=P.pop&&P.pop.dataset.k===kind;closePop();if(was)return;btn.classList.add('on');
+  var p=h('div','pop glass');p.dataset.k=kind;var html='';
+  if(kind==='sub'){html=(P.f.tr==='none'?'<div class="findrow"><span><b>Türkçe altyazı yok</b></span><button class="fetch" data-find="1">Bul ve ekle</button></div>':'')+'<h6>Altyazı</h6>'+[['off','Kapalı',''],['tr','Türkçe','OpenSubtitles'],['en','English','diskte']].map(function(o){return '<button class="opt'+((o[0]==='off'&&!P.subOn)||(o[0]==='tr'&&P.subOn===1)||(o[0]==='en'&&P.subOn===2)?' on':'')+'" data-so="'+o[0]+'"><span class="ck">'+ic('check')+'</span>'+o[1]+'<small>'+o[2]+'</small></button>'}).join('')+
+    '<h6>Senkron</h6><div class="step"><button data-dl="-1">−</button><b id="dlv">'+dl()+'</b><button data-dl="1">+</button></div>'+
+    '<h6>Boyut</h6><div class="seg"><button data-sz="s"'+(P.size==='s'?' class="on"':'')+'>Küçük</button><button data-sz="m"'+(P.size==='m'?' class="on"':'')+'>Orta</button><button data-sz="l"'+(P.size==='l'?' class="on"':'')+'>Büyük</button></div>'+
+    '<h6>Stil</h6><div class="seg">'+[['shadow','Sade'],['contour','Kontur'],['box','Kutu'],['yellow','Sarı']].map(function(o){return '<button data-bs="'+o[0]+'"'+(P.bgStyle===o[0]?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div>'}
+  else if(kind==='aud'){html='<h6>Ses izi</h6><button class="opt on"><span class="ck">'+ic('check')+'</span>English<small>AAC '+P.f.au+'</small></button><h6>Ses</h6><div class="step"><span>Ses gecikmesi</span><b>0 ms</b></div><button class="opt" data-tg="1"><span class="ck">'+ic('check')+'</span>Diyalog netliği<small>kapalı</small></button><button class="opt" data-tg="1"><span class="ck">'+ic('check')+'</span>Kayıpsız ses çözme<small>TrueHD · DTS-HD</small></button>'}
+  else if(kind==='spd'){html='<h6>Oynatma hızı</h6>'+[0.5,0.75,1,1.25,1.5,2].map(function(s){return '<button class="opt'+(s===P.speed?' on':'')+'" data-sp="'+s+'"><span class="ck">'+ic('check')+'</span>'+s+'×</button>'}).join('')}
+  else if(kind==='air'){html='<h6>Yayınla</h6><button class="opt on"><span class="ck">'+ic('check')+'</span>Bu Mac</button><button class="opt" data-air="1"><span class="ck">'+ic('check')+'</span>Salon Apple TV<small>AirPlay</small></button><button class="opt" data-air="1"><span class="ck">'+ic('check')+'</span>HomePod<small>yalnız ses</small></button>'}
+  p.innerHTML=html;P.el.querySelector('.pui').appendChild(p);
+  var br=btn.getBoundingClientRect(),pr=P.el.getBoundingClientRect(),w=280,left=Math.min(pr.width-w-12,Math.max(12,br.left-pr.left+br.width/2-w/2));p.style.left=left+'px';
+  if(kind==='air'){p.style.bottom='auto';p.style.top='62px';p.style.transformOrigin='top right'}
+  P.pop=p;wake();lgApply();
+}
+function dl(){return (P.delay>0?'+':P.delay<0?'−':'')+Math.abs(P.delay).toFixed(1)+' sn'}
+function onPClick(e){var b=e.target.closest('[data-p]');var pop=e.target.closest('.pop');
+  if(pop){var o;
+    if(o=e.target.closest('[data-so]')){P.subOn=o.dataset.so==='off'?0:o.dataset.so==='tr'?1:2;$$('[data-so]',pop).forEach(function(x){x.classList.toggle('on',x===o)})}
+    if(o=e.target.closest('[data-dl]')){P.delay=Math.round((P.delay+(+o.dataset.dl)*.1)*10)/10;$('#dlv',pop).textContent=dl()}
+    if(o=e.target.closest('[data-sz]')){P.size=o.dataset.sz;$$('[data-sz]',pop).forEach(function(x){x.classList.toggle('on',x===o)})}
+    if(o=e.target.closest('[data-bs]')){P.bgStyle=o.dataset.bs;$$('[data-bs]',pop).forEach(function(x){x.classList.toggle('on',x===o)})}
+    if(o=e.target.closest('[data-sp]')){P.speed=+o.dataset.sp;$('#spdb',P.el).textContent=P.speed+'×';$$('[data-sp]',pop).forEach(function(x){x.classList.toggle('on',x===o)})}
+    if(o=e.target.closest('[data-tg]')){o.classList.toggle('on')}
+    if(o=e.target.closest('[data-find]')){o.classList.add('busy');o.innerHTML='<span class="spin"></span>Aranıyor';setTimeout(function(){P.f.tr='online';P.subOn=1;closePop();toast('Türkçe altyazı filmin yanına kaydedildi','check')},1300)}
+    if(o=e.target.closest('[data-air]')){closePop();toast(o.textContent.replace(/AirPlay|yalnız ses/,'').trim()+' cihazına yayınlanıyor','air')}
+    wake();return}
+  if(P.el.classList.contains('pip')){P.el.classList.remove('pip');return}
+  if(!b){if(P.pop){closePop();return}if(!e.target.closest('.ctrl,.ptop'))togglePlay();return}
+  var k=b.dataset.p;
+  if(k==='close')closePlayer();else if(k==='pp')togglePlay();else if(k==='b10')seek(-10);else if(k==='f10')seek(10);
+  else if(k==='sub'||k==='aud'||k==='spd'||k==='air')openPop(k,b);
+  else if(k==='gear'){closePop();openSettings()}
+  else if(k==='pip'){closePop();P.el.classList.add('pip');toast('Resim içinde resim · büyütmek için tıkla','pip')}
+  else if(k==='full'){if(document.fullscreenElement)document.exitFullscreen().catch(function(){});else if(win.requestFullscreen)win.requestFullscreen().catch(function(){toast('Tam ekran bu görünümde kullanılamıyor','full')})}
+}
+function bindScrub(){var s=$('#scrub',P.el),prev=s.querySelector('.prev'),pc=prev.querySelector('canvas'),px=pc.getContext('2d'),lab=prev.querySelector('span');
+  function at(e){var r=s.querySelector('.track').getBoundingClientRect();return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))}
+  s.addEventListener('pointermove',function(e){var p=at(e),r=s.getBoundingClientRect(),tr=s.querySelector('.track').getBoundingClientRect();prev.style.left=Math.max(88,Math.min(r.width-88,(tr.left-r.left)+p*tr.width))+'px';lab.textContent=fmt(p*P.dur);
+    if(P.bg.complete){var iw=P.bg.naturalWidth,sw=iw*.55,sx=(iw-sw)*p;px.drawImage(P.bg,sx,(P.bg.naturalHeight-sw*9/16)/2,sw,sw*9/16,0,0,352,198)}
+    if(s.classList.contains('drag'))P.t=p*P.dur;wake()});
+  s.addEventListener('pointerdown',function(e){s.setPointerCapture(e.pointerId);s.classList.add('drag');P.t=at(e)*P.dur});
+  s.addEventListener('pointerup',function(){s.classList.remove('drag')});
+}
+function closePlayer(silent){if(!P)return;cancelAnimationFrame(P.raf);clearTimeout(P.idleTm);removeEventListener('resize',P.resize);var el=P.el;
+  var f=P.f;if(!silent){f.prog=P.t/P.dur>0.97?0:P.t/P.dur}P=null;
+  if(silent){el.remove();return}
+  el.animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.96)'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'}).onfinish=function(){el.remove()};
+  setNav();}
+
+document.addEventListener('keydown',function(e){if(e.target.matches('input'))return;
+  if(P&&$('.dim')){if(e.key==='Escape')closeSettings();return}
+  if(P){if(e.key===' '){e.preventDefault();togglePlay()}else if(e.key==='ArrowRight'){e.preventDefault();seek(10)}else if(e.key==='ArrowLeft'){e.preventDefault();seek(-10)}else if(e.key==='Escape'){if(P.pop)closePop();else closePlayer()}return}
+  if(e.key==='Escape'&&$('.gf[data-open],.gf-menu[data-open]')){$$('.gf[data-open]').forEach(function(o){gfOpen(o,false)});$$('.gf-menu[data-open]').forEach(function(m){m.removeAttribute('data-open')});return}
+  if(e.key==='Escape'){var d=$('.dim');if(d){closeSettings();return}if(state.view==='detail')goBack()}});
+
+/* ---------- settings ---------- */
+function openSettings(){closeSettings();var d=h('div','dim');
+  function sw(on){return '<span class="sw'+(on?' on':'')+'" role="switch" aria-checked="'+(on?'true':'false')+'" tabindex="0"></span>'}
+  function row(color,icon,t,s,right){return '<div class="gr"><span class="sq" style="background:'+color+'">'+ic(icon)+'</span><span class="tx">'+t+(s?'<small>'+s+'</small>':'')+'</span>'+right+'</div>'}
+  d.innerHTML='<div class="sheet" role="dialog" aria-label="Ayarlar"><div class="shead"><span style="width:62px"></span><h3>Ayarlar</h3><button class="done" id="sdone">Bitti</button></div><div class="sbody">'+
+   '<div class="gl"><h5>Genel</h5><div class="box">'+row('','globe','Dil','','<span class="mini" role="group" aria-label="Language"><button data-lang="en"'+(LANG==='en'?' class="on"':'')+'>EN</button><button data-lang="tr"'+(LANG==='tr'?' class="on"':'')+'>TR</button></span>')+row('','sync','Yumuşak kaydırma','Fare tekerleği ekranın tazeleme hızında kayar',sw(1))+'</div></div>'+
+   '<div class="gl"><h5>Oynatma</h5><div class="box">'+row('#5e5ce6','wave','Kayıpsız ses','TrueHD, DTS-HD MA, FLAC çözülür',sw(1))+row('#ff9f0a','film','HDR ton eşleme','Parlak sahneler ekranın gerçek tepe parlaklığına eşlenir','<span class="val">Otomatik '+ic('chr')+'</span>')+row('','gauge','Akıllı büyütme','1080p altı filmler ekrana göre keskinleşir',sw(1))+row('#32ade6','air','AirPlay','Apple TV ve AirPlay hoparlörler',sw(1))+'</div></div>'+
+   '<div class="gl"><h5>Altyazı</h5><div class="box">'+row('#30d158','globe','Tercih edilen dil','Bölgene göre','<span class="val">'+(LANG==='en'?'English':'Türkçe')+' '+ic('chr')+'</span>')+row('#64d2ff','cc','Otomatik indir','Yeni filmde altyazıyı kendisi bulur',sw(1))+row('','sliders','Altyazı stili','','<span class="val">Sade '+ic('chr')+'</span>')+'</div></div>'+
+   '<div class="gl"><h5>Kaynaklar</h5><div class="box">'+row('#636366','disk','PixelVault','101 film · bağlı','<span class="dot"></span>')+row('#0a84ff','net','Ağ paylaşımı','SMB, NFS, WebDAV, NAS','<span class="val">Ekle '+ic('chr')+'</span>')+row('#5ac8fa','cloud','Bulut klasörü','Dropbox, Google Drive, OneDrive Finder klasörleri','<span class="val">Ekle '+ic('chr')+'</span>')+'</div></div>'+
+   '<div class="gl"><h5>Eşitleme</h5><div class="box">'+row('#ff375f','sync','iCloud eşitleme','İzleme geçmişi ve kaldığın yer diğer Mac\'lerinde',sw(1))+'</div></div>'+
+   '<div class="gl" id="about"><h5>Hakkında</h5><div class="box">'+row('#8e8e93','sync','Güncellemeler','<span id="updst">Perde '+VERSION+'</span>','<span class="upd"><button class="fetch" id="updbtn">Güncellemeleri denetle</button></span>')+'</div></div>'+
+   '<p class="free">Hepsi ücretsiz. Abonelik, deneme süresi, kilitli özellik yok.</p></div></div>';
+  if(win.dataset.os!=='macos')$$('.gr',d).forEach(function(r){if(/iCloud|AirPlay|Kayıpsız ses/.test(r.textContent))r.remove()});
+  win.appendChild(d);
+  $('#updbtn',d).onclick=checkUpdates;
+  d.addEventListener('click',function(e){if(e.target===d||e.target.closest('#sdone'))closeSettings();var s=e.target.closest('.sw');if(s){s.classList.toggle('on');s.setAttribute('aria-checked',s.classList.contains('on'))}});
+}
+function closeSettings(){var d=$('.dim');if(!d)return;d.animate([{opacity:1},{opacity:0}],{duration:220}).onfinish=function(){d.remove()};setNav()}
+
+
+/* ---------- güncellemeler: gerçek GitHub sorgusu (uygulamadaki UpdateCheck ile aynı) ---------- */
+var VERSION='0.1.0';
+function newer(a,b){var x=a.split('.').map(Number),y=b.split('.').map(Number);for(var i=0;i<Math.max(x.length,y.length);i++){if((x[i]||0)!==(y[i]||0))return (x[i]||0)>(y[i]||0)}return false}
+function checkUpdates(){var b=$('#updbtn'),st=$('#updst');if(!b||b.classList.contains('busy'))return;b.classList.add('busy');b.innerHTML='<span class="spin"></span>Denetleniyor';
+  fetch('https://api.github.com/repos/kutluhangil/Perde-Releases/releases/latest',{headers:{Accept:'application/vnd.github+json'}}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+    var v=String(j.tag_name||'').replace(/^v/,'');b.classList.remove('busy');
+    if(v&&newer(v,VERSION)){st.textContent='Perde '+v+' çıktı';b.outerHTML='<a class="fetch" href="'+j.html_url+'" target="_blank" rel="noopener">Güncellemeyi al</a>'}
+    else{st.textContent='Perde güncel · '+(v||VERSION);b.classList.add('done');b.innerHTML=ic('check')+'Perde güncel'}
+  }).catch(function(){b.classList.remove('busy');b.textContent='Güncellemeleri denetle';st.textContent='Bağlanılamadı · sonra yeniden dene'})}
+
+/* ---------- kütüphane düzeni: önce → sonra ---------- */
+function openCleanup(auto){closeSettings();var d=h('div','dim'),ids=['dune-part-two','blade-runner-2049','interstellar','parasite','oppenheimer'];
+  d.innerHTML='<div class="sheet" role="dialog" aria-label="Kütüphane düzeni"><div class="shead"><span style="width:62px"></span><h3>Kütüphane düzeni</h3><button class="done" data-cl="close">Kapat</button></div><div class="sbody">'+
+   '<p class="lead">Klasör adlarından çözünürlük ve kaynak etiketleri çıkar, artık dosyalar Çöp\'e gider. İzleme geçmişi ve eşleşmeler korunur.</p>'+
+   '<div class="gl"><div class="box clean">'+ids.map(function(id){var f=F[id],base=f.file.replace(/\.(mkv|mp4)$/,''),m=base.match(/^(.*?\.\d{4})(\..*)$/);
+     return '<div class="crow2"><span class="old">'+esc(m?m[1]:base)+'<s>'+esc(m?m[2]:'')+'</s></span><span class="arr">→</span><span class="new">'+esc(f.t)+' ('+f.y+')</span></div>'}).join('')+
+   '<div class="crow2"><span class="old">Artık dosyalar<s> · 23 dosya · 4,1 MB</s></span><span class="arr">→</span><span class="new">Çöp\'e</span></div></div></div>'+
+   '<div class="acts2"><button class="btn2" data-cl="close">Vazgeç</button><button class="btn2 pri" data-cl="go">Düzenle</button></div></div></div>';
+  win.appendChild(d);
+  function go(){var b=$('[data-cl=go]',d);if(!b||b.disabled)return;b.disabled=true;$$('.crow2',d).forEach(function(r,i){setTimeout(function(){r.classList.add('done')},RM?0:180+i*260)});
+    setTimeout(function(){toast("5 klasör düzenlendi · 23 artık dosya Çöp'e taşındı",'check')},RM?0:180+6*260)}
+  d.addEventListener('click',function(e){var a=e.target.closest('[data-cl]');if(e.target===d||(a&&a.dataset.cl==='close'))closeSettings();else if(a&&a.dataset.cl==='go')go()});
+  if(auto)setTimeout(go,1500);
+}
+
+/* ---------- geri bildirim: uygulamadaki form ---------- */
+function openFeedback(){closeSettings();var d=h('div','dim');
+  d.innerHTML='<div class="sheet" role="dialog" aria-label="Geri bildirim"><div class="shead"><span style="width:62px"></span><h3>Geri bildirim</h3><button class="done" data-fb="close">Kapat</button></div><div class="sbody">'+
+   '<div class="fbseg" role="group"><button class="on" data-k="0">Öneri</button><button data-k="1">Hata</button><button data-k="2">Başka</button></div>'+
+   '<textarea class="fbtext" maxlength="1500" placeholder="Ne düşünüyorsun? Bir öneri, bir hata, aklına gelen her şey."></textarea>'+
+   '<div class="fbmeta"><span>Mesaj e-posta uygulamanda açılır; yanıt kendi adresine gelir.</span><span id="fbn">0 / 1500</span></div>'+
+   '<div class="acts2"><button class="btn2" data-fb="close">Vazgeç</button><button class="btn2 pri" data-fb="send" disabled>Gönder</button></div></div></div>';
+  win.appendChild(d);var ta=$('.fbtext',d),send=$('[data-fb=send]',d);
+  ta.addEventListener('input',function(){$('#fbn',d).textContent=ta.value.length+' / 1500';send.disabled=!ta.value.trim()});
+  d.addEventListener('click',function(e){var k=e.target.closest('[data-k]'),a=e.target.closest('[data-fb]');
+    if(k){$$('[data-k]',d).forEach(function(x){x.classList.toggle('on',x===k)});return}
+    if(e.target===d||(a&&a.dataset.fb==='close'))closeSettings();
+    else if(a&&a.dataset.fb==='send'){closeSettings();toast('E-posta uygulaman açılır, gönderen sen olursun','check')}});
+  setTimeout(function(){ta.focus({preventScroll:true})},350);
+}
+
+/* ---------- site köprüsü: bölümler, sistem, etkileşim ---------- */
+function post(msg){if(parent!==window)parent.postMessage(Object.assign({perdeTour:1},msg),location.origin)}
+function reset(){closeSettings();$$('.dim').forEach(function(x){x.remove()});closePlayer(true);var it=$('.intro');if(it)it.remove();
+  $$('.gf[data-open]').forEach(function(o){gfOpen(o,false)});$('#side').classList.remove('open');$$('.nav.fb').forEach(function(n){n.classList.remove('ping')})}
+var CH={
+  acilis:function(){show('home',{noAnim:true});playIntro()},
+  vitrin:function(){show('home')},
+  kutuphane:function(){state.query='';$('#q').value='';state.gmode='movies';state.filter='all';show('grid')},
+  film:function(){openDetail('dune-part-two',null)},
+  oynatici:function(){openPlayer('dune-part-two')},
+  altyazi:function(auto){F.interstellar.tr='none';openPlayer('interstellar');setTimeout(function(){if(!P)return;var b=$('[data-p=sub]',P.el);if(b)openPop('sub',b);
+    if(auto)setTimeout(function(){var x=P&&$('[data-find]',P.el);if(x)x.click()},1400)},650)},
+  dosyalar:function(){show('files');setTimeout(function(){var g=$$('.gf')[0];if(g&&state.view==='files')gfOpen(g,true)},1300)},
+  duzen:function(auto){show('files',{noAnim:true});setTimeout(function(){openCleanup(auto)},250)},
+  ayarlar:function(auto){openSettings();setTimeout(function(){var sb=$('.sheet');if(sb)sb.scrollTo({top:sb.scrollHeight,behavior:RM?'auto':'smooth'});if(auto)setTimeout(checkUpdates,700)},500)},
+  geribildirim:function(){show('home');var n=$('.nav.fb');if(n)n.classList.add('ping');setTimeout(openFeedback,1100)}
+};
+addEventListener('message',function(e){if(e.origin!==location.origin||!e.data||!e.data.perdeTour)return;var m=e.data;
+  if(m.os){win.dataset.os=m.os;requestAnimationFrame(function(){lgApply(true)})}
+  if(m.chapter&&CH[m.chapter]){reset();CH[m.chapter](!!m.auto)}});
+['pointerdown','keydown','wheel'].forEach(function(t){addEventListener(t,function(e){if(e.isTrusted)post({interact:1})},{passive:true,capture:true})});
+
+/* ---------- boot ---------- */
+window.__perdeLang=function(){if($('.dim'))openSettings()};
+setLang(LANG,true);
+show('home',{noAnim:true});
+post({ready:1});
+})();
+</script>
+

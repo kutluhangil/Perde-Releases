@@ -1,0 +1,261 @@
+---
+import { getImage } from 'astro:assets';
+import Icon from './Icon.astro';
+import { films } from '../data/films';
+import { posters, backdrops } from '../data/posters';
+import { downloadUrl, type Release } from '../data/release';
+import { t, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+  release: Release;
+}
+const { lang, release } = Astro.props;
+const d = t(lang);
+
+// TMDB'nin yazısız geniş sahnesi (backdrops/<id>.jpg); yoksa afiş.
+const order = {
+  dark: ['dune-part-two', 'blade-runner-2049', 'interstellar', 'oppenheimer', 'la-la-land', 'parasite'],
+  light: ['the-grand-budapest-hotel', 'mad-max-fury-road', 'spirited-away', 'amelie', 'arrival', 'little-women'],
+};
+
+const scenes = await Promise.all(
+  (['dark', 'light'] as const).flatMap((mood) =>
+    order[mood].map(async (id, i) => {
+      const film = films.find((f) => f.id === id)!;
+      const wide = backdrops[id];
+      const src = wide ?? posters[id];
+      const widths = wide ? [960, 1600, 2400] : [848];
+      const [avif, webp] = await Promise.all(
+        (['avif', 'webp'] as const).map((format) => getImage({ src, widths, format, quality: 72 })),
+      );
+      return {
+        id,
+        mood,
+        first: i === 0,
+        wide: Boolean(wide),
+        title: film.title[lang],
+        year: film.year,
+        tint: film.tint,
+        avif: avif.srcSet.attribute,
+        webp: webp.srcSet.attribute,
+        fallback: webp.src,
+      };
+    }),
+  ),
+);
+const mac = 'Perde-macOS-arm64.dmg';
+---
+
+<section
+  class="hero"
+  data-hero
+  aria-labelledby="hero-title"
+  data-download-labels={JSON.stringify({ ...d.hero.download, soon: d.hero.soon })}
+>
+  <div class="scenes" data-scenes>
+    {
+      scenes.map((s) => (
+        <picture
+          class:list={['scene', { wide: s.wide }]}
+          data-mood={s.mood}
+          data-first={s.first ? '' : undefined}
+          data-title={s.title}
+          data-year={s.year}
+          data-tint={s.tint}
+        >
+          {s.first ? (
+            <>
+              <source type="image/avif" srcset={s.avif} sizes="100vw" />
+              <source type="image/webp" srcset={s.webp} sizes="100vw" />
+              <img src={s.fallback} alt="" decoding="async" fetchpriority="high" />
+            </>
+          ) : (
+            <>
+              <source type="image/avif" data-srcset={s.avif} sizes="100vw" />
+              <source type="image/webp" data-srcset={s.webp} sizes="100vw" />
+              <img data-src={s.fallback} alt="" decoding="async" />
+            </>
+          )}
+        </picture>
+      ))
+    }
+  </div>
+  <div class="scrim" aria-hidden="true"></div>
+
+  <div class="hero-inner wrap">
+    <div class="hero-row">
+      <div class="hero-copy">
+        <p class="tagline">{d.hero.tagline}</p>
+        <p class="sub">{d.hero.sub}</p>
+      </div>
+      <div class="hero-actions">
+        <div class="actions-row">
+          <a class="btn-download" href={downloadUrl(mac)} data-download-link data-download-label>
+            <Icon name="download" />
+            <span>{d.hero.download.macos}</span>
+          </a>
+          <a class="glass glass--clear glass--refract glass-btn other" href="#indir">{d.hero.other}</a>
+        </div>
+        <p class="meta">{d.hero.meta} · v{release.version}</p>
+      </div>
+    </div>
+    <h1 id="hero-title" class="brandword" aria-label="Perde" data-fit>
+      <span aria-hidden="true" class="per">PER</span><span aria-hidden="true" class="de">DE</span>
+    </h1>
+    <p class="now" aria-hidden="true"><span data-scene-title>{scenes[0].title}</span> · <span data-scene-year
+      >{scenes[0].year}</span
+    ></p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: max(100svh, 640px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: end;
+    overflow: clip;
+    background: var(--stage);
+    color: var(--stage-ink);
+    isolation: isolate;
+  }
+  .scenes,
+  .scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 2.4s var(--ease);
+  }
+  .scene img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 18%;
+    transform: scale(1.06);
+    transition: transform 14s linear;
+  }
+  .scene.wide img {
+    object-position: 62% 40%;
+  }
+  /* Geçici afiş sahnesi dikey ekranda: afişin alttaki yazısı kadrajın dışında kalsın */
+  @media (max-aspect-ratio: 1/1) {
+    .scene:not(.wide) img {
+      height: 128%;
+      object-position: center top;
+    }
+  }
+  .scene[data-on] {
+    opacity: 1;
+  }
+  .scene[data-on] img {
+    transform: scale(1);
+  }
+  /* İlk boyama: JS sahne seçmeden önce temaya uygun ilk sahne görünür (JS'siz de) */
+  :global(:root:not([data-theme])) .scene[data-mood='dark'][data-first],
+  :global(:root[data-theme='dark']) .scenes:not(:has(.scene[data-on])) .scene[data-mood='dark'][data-first],
+  :global(:root[data-theme='light']) .scenes:not(:has(.scene[data-on])) .scene[data-mood='light'][data-first] {
+    opacity: 1;
+    transition: none;
+  }
+  .scrim {
+    background:
+      linear-gradient(to top, rgb(10 10 12 / 0.92) 0%, rgb(10 10 12 / 0.55) 34%, rgb(10 10 12 / 0) 62%),
+      linear-gradient(to bottom, rgb(10 10 12 / 0.45), rgb(10 10 12 / 0) 22%);
+  }
+  /* Aydınlık sahnelerde başlık ve düğmeler için sol ve alt biraz daha koyu */
+  :global(:root[data-theme='light']) .scrim {
+    background:
+      linear-gradient(to right, rgb(10 10 12 / 0.5) 0%, rgb(10 10 12 / 0.12) 48%, rgb(10 10 12 / 0) 70%),
+      linear-gradient(to top, rgb(10 10 12 / 0.9) 0%, rgb(10 10 12 / 0.5) 36%, rgb(10 10 12 / 0) 64%),
+      linear-gradient(to bottom, rgb(10 10 12 / 0.4), rgb(10 10 12 / 0) 22%);
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(20px, 3vw, 36px);
+    padding-top: 140px;
+  }
+  .hero-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 28px 48px;
+  }
+  .hero-copy {
+    display: grid;
+    gap: 16px;
+    max-width: 640px;
+  }
+  .tagline {
+    font-size: var(--step-2);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .sub {
+    font-size: var(--step-1);
+    line-height: 1.4;
+    color: rgb(245 245 247 / 0.82);
+    max-width: 34ch;
+  }
+  .hero-actions {
+    display: grid;
+    gap: 12px;
+    justify-items: end;
+  }
+  .actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .other {
+    min-height: 52px;
+    padding-inline: 22px;
+    font-size: 1rem;
+  }
+  .meta {
+    font-size: 0.9375rem;
+    color: rgb(245 245 247 / 0.72);
+  }
+  .brandword {
+    display: flex;
+    justify-content: center;
+    font-family: var(--font-brand);
+    font-weight: 500;
+    /* Yaklaşık değer; shell.ts yazı tipi yüklenince kelimeyi kenar boşlukları arasına tam sığdırır */
+    font-size: var(--brand-size, calc((100vw - 2 * var(--gutter)) / 3.9));
+    line-height: 0.74;
+    letter-spacing: 0.01em;
+    margin-bottom: -0.035em;
+    color: #f5f5f7;
+  }
+  .brandword span {
+    display: block;
+    will-change: transform;
+  }
+  .now {
+    position: absolute;
+    right: var(--gutter);
+    top: 100px;
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: rgb(245 245 247 / 0.66);
+  }
+  @media (max-width: 760px) {
+    .hero-actions {
+      justify-items: start;
+    }
+    .now {
+      display: none;
+    }
+  }
+</style>
