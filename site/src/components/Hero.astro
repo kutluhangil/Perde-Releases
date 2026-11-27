@@ -169,11 +169,12 @@ const labels = JSON.stringify({ ...d.hero.download, soon: d.hero.soon });
     grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
     align-items: end;
     gap: clamp(24px, 4cqw, 72px);
-    padding: 0 var(--gutter) clamp(28px, 3.4cqw, 52px);
+    /* diğer bölümlerle aynı kolon: en çok --max genişlik, ortada */
+    padding: 0 max(var(--gutter), (100% - var(--max)) / 2) clamp(28px, 3.4cqw, 52px);
   }
   .sh-h1 {
     font-weight: 500;
-    font-size: clamp(40px, min(6.6cqw, 11.5cqh), 124px);
+    font-size: clamp(40px, min(6.6cqw, 11.5cqh), 96px);
     line-height: 0.92;
     letter-spacing: -0.045em;
   }
