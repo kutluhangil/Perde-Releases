@@ -1,0 +1,153 @@
+---
+// Kapanış ve footer. Arka plandaki "perde" yazısı yalnız süs: tıklamayı engellemez (pointer-events: none, içeriğin altında).
+import Icon from './Icon.astro';
+import { accent } from '../lib/accent';
+import { t, type Lang } from '../i18n';
+import { downloadUrl, issuesPage, releasesPage, repo } from '../data/release';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang);
+---
+
+<footer class="end">
+  <section class="closing wrap" aria-labelledby="cta-title">
+    <h2 id="cta-title" set:html={accent(d.cta.heading, d.cta.accent)} />
+    <div class="aside">
+      <p>{d.cta.sub}</p>
+      <div class="actions">
+        <a class="btn" href={downloadUrl('Perde-macOS-arm64.dmg')} data-download-link data-download-label>
+          <Icon name="download" size={18} />
+          <span>{d.hero.download.macos}</span>
+        </a>
+        <a class="txt" href="#indir" data-other-systems>{d.hero.other}<Icon name="arrow-right" size={14} /></a>
+      </div>
+    </div>
+  </section>
+
+  <div class="bar wrap">
+    <nav class="links" aria-label="Perde">
+      <a href="#indir">{d.footer.links.download}</a>
+      <a href={releasesPage}>{d.footer.links.releases}</a>
+      <a href={issuesPage}>{d.footer.links.issues}</a>
+      <a class="gh" href={`https://github.com/${repo}`}><Icon name="github" size={16} />{d.footer.links.github}</a>
+    </nav>
+    <p class="made"><a href="https://github.com/kutluhangil">{d.footer.made}</a> · © 2026 Kutluhan Gül</p>
+  </div>
+
+  <div class="notes wrap">
+    <p>{d.footer.fictional}</p>
+    <p>{d.footer.tmdb}</p>
+    <p>{d.footer.rights} {d.footer.credit} <a href="https://guglielmogiannattasio.it" rel="noopener">guglielmogiannattasio.it</a></p>
+  </div>
+
+  <p class="word" aria-hidden="true">perde</p>
+</footer>
+
+<style>
+  .end {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    padding-top: clamp(72px, 9vw, 128px);
+  }
+  .closing {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 28px clamp(24px, 5vw, 72px);
+    align-items: end;
+  }
+  @media (max-width: 900px) {
+    .closing {
+      grid-template-columns: 1fr;
+    }
+  }
+  .closing h2 {
+    font-size: clamp(3rem, 1.6rem + 6vw, 7.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+  }
+  .aside {
+    padding-bottom: 0.6em;
+  }
+  .aside p {
+    margin-bottom: 22px;
+    color: var(--ink-2);
+    font-size: 1.0625rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 22px;
+  }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+    margin-top: clamp(64px, 8vw, 112px);
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+  }
+  .links a,
+  .made a {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .links a:hover,
+  .made a:hover {
+    opacity: 0.6;
+  }
+  .gh {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .made {
+    font-size: 0.875rem;
+    color: var(--ink-3);
+  }
+  .notes {
+    display: grid;
+    gap: 6px;
+    padding-bottom: clamp(120px, 16vw, 220px);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+  .notes a {
+    color: inherit;
+  }
+  .word {
+    position: absolute;
+    left: 50%;
+    bottom: -0.2em;
+    z-index: -1;
+    transform: translateX(-50%);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 26vw;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: color-mix(in srgb, var(--ink) 5%, transparent);
+  }
+  @media (max-width: 760px) {
+    .notes {
+      padding-bottom: 140px;
+    }
+  }
+</style>

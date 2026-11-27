@@ -5,6 +5,7 @@
 <meta name="robots" content="noindex">
 <title>Perde</title>
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="icon" href="/favicon.png">
 <script src="films.js?v=e79742fb"></script>
 <style>
 /* Perde sitesinin canlı turu: uygulamanın penceresi (iframe içinde). Ana sayfa bölümleri postMessage ile yönetir.
@@ -420,6 +421,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .gf-mi{padding:9px 12px;border-radius:10px;font-size:13.5px;text-align:left;color:#f4f4f5}
 .gf-mi:hover,.gf-mi:focus-visible{background:rgba(255,255,255,.09)}
 .gf-mi.danger{color:#ff6b5e}
+.mm{position:absolute;bottom:auto;z-index:60}
 .gf:not([data-entered]) .gf-back,.gf:not([data-entered]) .gf-rim.b{translate:0 22px;opacity:0}
 .gf:not([data-entered]) .gf-sheet{translate:0 -120px;opacity:0}
 .gf:not([data-entered]) .gf-front{translate:0 46px;opacity:0}
@@ -671,7 +673,7 @@ html:not([data-l=en]) .l-en{display:none!important}
       <div class="pill glass">
         <button aria-label="Görünüm" id="gview"><svg class="ic"><use href="#i-grid"/></svg></button>
         <button aria-label="Kütüphaneyi yenile" id="refresh"><svg class="ic"><use href="#i-sync"/></svg></button>
-        <button aria-label="Diğer"><svg class="ic"><use href="#i-dots"/></svg></button>
+        <button aria-label="Diğer" data-more="bar"><svg class="ic"><use href="#i-dots"/></svg></button>
       </div>
     </div>
 
@@ -711,7 +713,7 @@ var EN={'Açılış':'Opening','İlk açılış':'First launch','Ana sayfa':'Hom
  "Bu tarayıcı SVG kırılmayı arka plana uygulayamıyor; klasik cam gösteriliyor. Sıvı camı görmek için Chrome ya da Edge'de aç.":"This browser can't refract the backdrop with SVG, so classic glass is shown. Open the page in Chrome or Edge to see liquid glass.",
  'Ara':'Search','Ana Sayfa':'Home','İzleme Listesi':'Watchlist','Kütüphane':'Library','Yeni Eklenenler':'Recently Added','Diziler':'TV Shows','Türler':'Genres','Koleksiyonlar':'Collections','Kaynaklar':'Sources','Kaynak Ekle':'Add Source',
  '101 başlık · 420,58 GB':'101 titles · 420.58 GB','film':'films','saat':'hours','TR altyazılı':'TR subtitles','Kütüphane özeti':'Library summary',
- 'Kenar çubuğu':'Sidebar','Kenar çubuğunu aç':'Open sidebar','Geri':'Back','Görünüm':'View','Kütüphaneyi yenile':'Refresh library','Diğer':'More','Bağlı':'Connected','Perde uygulama simgesi':'Perde app icon','Ekranlar':'Screens','Cam türü':'Glass type',
+ 'Kenar çubuğu':'Sidebar','· 23 dosya · 4,1 MB':'· 23 files · 4.1 MB','Kütüphane düzeni…':'Library cleanup…','Ayarlar…':'Settings…',"Finder'da göster":'Show in Finder',"Finder'da gösterildi":'Shown in Finder','Altyazı bul…':'Find subtitles…','Kenar çubuğunu aç':'Open sidebar','Geri':'Back','Görünüm':'View','Kütüphaneyi yenile':'Refresh library','Diğer':'More','Bağlı':'Connected','Perde uygulama simgesi':'Perde app icon','Ekranlar':'Screens','Cam türü':'Glass type',
  'Geri kaydır':'Scroll back','İleri kaydır':'Scroll forward','İzlemeye devam et':'Continue Watching','Yeni eklenenler':'Recently Added','PixelVault · son 7 gün':'PixelVault · last 7 days','TMDB koleksiyonları ve akıllı listeler':'TMDB collections and smart lists','TMDB koleksiyonu · 3 film':'TMDB collection · 3 films','Animasyon gecesi':'Animation night','Akıllı liste · 3 film':'Smart list · 3 films','Uzay ve zaman':'Space and time','Gece yarısı':'Midnight',
  "Film bilgileri ve görseller TMDB'den. Bu ürün TMDB API'sini kullanır ancak TMDB tarafından onaylanmamıştır.":'Film details and images from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.',
  'Yeni eklendi':'Just added','YENİ':'NEW','Kütüphanenden':'From your library','Oynat':'Play','İzleme listesi':'Watchlist','Ayrıntılar':'Details','Başrolde':'Starring','Önceki':'Previous','Sonraki':'Next',
@@ -1012,7 +1014,7 @@ function renderDetail(){
    '<button class="gbtn glass'+(watch[f.id]?' on':'')+'" data-act="watch" data-id="'+f.id+'" aria-label="İzleme listesi">'+ic(watch[f.id]?'check':'plus')+'</button>'+
    '<button class="gbtn glass'+(f.seen?' on':'')+'" data-act="seen" data-id="'+f.id+'" aria-label="İzlendi olarak işaretle">'+ic('eye')+'</button>'+
    '<button class="gbtn glass" data-act="trailer" aria-label="Fragman">'+ic('trailer')+'</button>'+
-   '<button class="gbtn glass" aria-label="Diğer">'+ic('dots')+'</button></div>'+
+   '<button class="gbtn glass" aria-label="Diğer" data-more="film" data-id="'+f.id+'">'+ic('dots')+'</button></div>'+
    '<span class="who"><span>Başrolde</span> <b>'+esc(f.cast.slice(0,3).join(', '))+'</b> · <span>Yönetmen</span> <b>'+esc(f.dir)+'</b></span></div>';
   v.appendChild(dh);
   var body=h('div','pad');
@@ -1252,7 +1254,7 @@ function openCleanup(auto){closeSettings();var d=h('div','dim'),ids=['dune-part-
   d.innerHTML='<div class="sheet" role="dialog" aria-label="Kütüphane düzeni"><div class="shead"><span style="width:62px"></span><h3>Kütüphane düzeni</h3><button class="done" data-cl="close">Kapat</button></div><div class="sbody">'+
    '<p class="lead">Klasör adlarından çözünürlük ve kaynak etiketleri çıkar, artık dosyalar Çöp\'e gider. İzleme geçmişi ve eşleşmeler korunur.</p>'+
    '<div class="gl"><div class="box clean">'+ids.map(function(id){var f=F[id],base=f.file.replace(/\.(mkv|mp4)$/,''),m=base.match(/^(.*?\.\d{4})(\..*)$/);
-     return '<div class="crow2"><span class="old">'+esc(m?m[1]:base)+'<s>'+esc(m?m[2]:'')+'</s></span><span class="arr">→</span><span class="new">'+esc(f.t)+' ('+f.y+')</span></div>'}).join('')+
+     return '<div class="crow2"><span class="old">'+esc(m?m[1]:base)+'<s>'+esc(m?m[2]:'')+'</s></span><span class="arr">→</span><span class="new">'+esc(LANG==='en'?f.tEn:f.t)+' ('+f.y+')</span></div>'}).join('')+
    '<div class="crow2"><span class="old">Artık dosyalar<s> · 23 dosya · 4,1 MB</s></span><span class="arr">→</span><span class="new">Çöp\'e</span></div></div></div>'+
    '<div class="acts2"><button class="btn2" data-cl="close">Vazgeç</button><button class="btn2 pri" data-cl="go">Düzenle</button></div></div></div>';
   win.appendChild(d);
@@ -1278,9 +1280,25 @@ function openFeedback(){closeSettings();var d=h('div','dim');
   setTimeout(function(){ta.focus({preventScroll:true})},350);
 }
 
+/* ---------- ··· menüleri (araç çubuğu ve film sayfası) ---------- */
+function closeMore(){var m=$('.mm');if(m)m.parentNode.removeChild(m);$$('[data-more].on').forEach(function(b){b.classList.remove('on')})}
+function openMore(btn,items){var again=btn.classList.contains('on');closeMore();if(again)return;btn.classList.add('on');
+  var m=h('div','gf-menu mm');m.setAttribute('role','menu');m.setAttribute('data-open','');
+  items.forEach(function(it){var b=h('button','gf-mi',esc(it[0]));b.setAttribute('role','menuitem');b.onclick=function(e){e.stopPropagation();closeMore();it[1]()};m.appendChild(b)});
+  var r=btn.getBoundingClientRect(),w=win.getBoundingClientRect();m.style.right=Math.max(12,w.right-r.right)+'px';win.appendChild(m);
+  if(r.bottom+8+m.offsetHeight>w.bottom-12)m.style.top=(r.top-w.top-8-m.offsetHeight)+'px';else m.style.top=(r.bottom-w.top+8)+'px';
+  m.querySelector('.gf-mi').focus()}
+function moreItems(btn){var id=btn.dataset.id;
+  if(btn.dataset.more==='film')return[["Finder'da göster",function(){toast("Finder'da gösterildi",'folder')}],
+    ['Altyazı bul…',function(){openPlayer(id);setTimeout(function(){if(!P)return;var b=$('[data-p=sub]',P.el);if(b)openPop('sub',b)},650)}]];
+  return[['Kütüphane düzeni…',function(){openCleanup(false)}],['Ayarlar…',openSettings],['Kütüphaneyi yenile',function(){$('#refresh').click()}]]}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-more]');if(b){e.stopPropagation();openMore(b,moreItems(b));return}
+  if(!e.target.closest('.mm'))closeMore()},true);
+addEventListener('keydown',function(e){if(e.key==='Escape')closeMore()});
+
 /* ---------- site köprüsü: bölümler, sistem, etkileşim ---------- */
 function post(msg){if(parent!==window)parent.postMessage(Object.assign({perdeTour:1},msg),location.origin)}
-function reset(){closeSettings();$$('.dim').forEach(function(x){x.remove()});closePlayer(true);var it=$('.intro');if(it)it.remove();
+function reset(){closeMore();closeSettings();$$('.dim').forEach(function(x){x.remove()});closePlayer(true);var it=$('.intro');if(it)it.remove();
   $$('.gf[data-open]').forEach(function(o){gfOpen(o,false)});$('#side').classList.remove('open');$$('.nav.fb').forEach(function(n){n.classList.remove('ping')})}
 var CH={
   acilis:function(){show('home',{noAnim:true});playIntro()},

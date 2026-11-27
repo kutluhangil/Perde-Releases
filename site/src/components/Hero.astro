@@ -1,8 +1,8 @@
 ---
-import { getImage } from 'astro:assets';
+// Hero: turdaki afişlerden bir yelpaze, binlerce parçacıktan yeniden kurulur; imleç onu sıvıya çevirir,
+// bırakınca keskin görüntüye döner (scripts/hero.ts, scripts/liquid-engine.ts). WebGL2 yoksa durağan görsel kalır.
 import Icon from './Icon.astro';
-import { films } from '../data/films';
-import { posters, backdrops } from '../data/posters';
+import { accent } from '../lib/accent';
 import { downloadUrl, type Release } from '../data/release';
 import { t, type Lang } from '../i18n';
 
@@ -12,250 +12,238 @@ interface Props {
 }
 const { lang, release } = Astro.props;
 const d = t(lang);
-
-// TMDB'nin yazısız geniş sahnesi (backdrops/<id>.jpg); yoksa afiş.
-const order = {
-  dark: ['dune-part-two', 'blade-runner-2049', 'interstellar', 'oppenheimer', 'la-la-land', 'parasite'],
-  light: ['the-grand-budapest-hotel', 'mad-max-fury-road', 'spirited-away', 'amelie', 'arrival', 'little-women'],
-};
-
-const scenes = await Promise.all(
-  (['dark', 'light'] as const).flatMap((mood) =>
-    order[mood].map(async (id, i) => {
-      const film = films.find((f) => f.id === id)!;
-      const wide = backdrops[id];
-      const src = wide ?? posters[id];
-      const widths = wide ? [960, 1600, 2400] : [848];
-      const [avif, webp] = await Promise.all(
-        (['avif', 'webp'] as const).map((format) => getImage({ src, widths, format, quality: 72 })),
-      );
-      return {
-        id,
-        mood,
-        first: i === 0,
-        wide: Boolean(wide),
-        title: film.title[lang],
-        year: film.year,
-        tint: film.tint,
-        avif: avif.srcSet.attribute,
-        webp: webp.srcSet.attribute,
-        fallback: webp.src,
-      };
-    }),
-  ),
-);
-const mac = 'Perde-macOS-arm64.dmg';
+const labels = JSON.stringify({ ...d.hero.download, soon: d.hero.soon });
 ---
 
-<section
-  class="hero"
-  data-hero
-  aria-labelledby="hero-title"
-  data-download-labels={JSON.stringify({ ...d.hero.download, soon: d.hero.soon })}
->
-  <div class="scenes" data-scenes>
-    {
-      scenes.map((s) => (
-        <picture
-          class:list={['scene', { wide: s.wide }]}
-          data-mood={s.mood}
-          data-first={s.first ? '' : undefined}
-          data-title={s.title}
-          data-year={s.year}
-          data-tint={s.tint}
-        >
-          {s.first ? (
-            <>
-              <source type="image/avif" srcset={s.avif} sizes="100vw" />
-              <source type="image/webp" srcset={s.webp} sizes="100vw" />
-              <img src={s.fallback} alt="" decoding="async" fetchpriority="high" />
-            </>
-          ) : (
-            <>
-              <source type="image/avif" data-srcset={s.avif} sizes="100vw" />
-              <source type="image/webp" data-srcset={s.webp} sizes="100vw" />
-              <img data-src={s.fallback} alt="" decoding="async" />
-            </>
-          )}
-        </picture>
-      ))
-    }
+<section class="sh-root" id="top" aria-labelledby="hero-title" data-hero data-download-labels={labels}>
+  <div class="sh-backdrop" data-backdrop aria-hidden="true">perde</div>
+  <div class="sh-stage" data-stage aria-hidden="true">
+    <img class="sh-fallback" data-fallback src="/hero/fan-wide.webp" data-wide="/hero/fan-wide.webp" data-tall="/hero/fan-tall.webp" alt="" draggable="false" />
   </div>
-  <div class="scrim" aria-hidden="true"></div>
+  <p class="visually-hidden">{d.hero.alt}</p>
 
-  <div class="hero-inner wrap">
-    <div class="hero-row">
-      <div class="hero-copy">
-        <p class="tagline">{d.hero.tagline}</p>
-        <p class="sub">{d.hero.sub}</p>
-      </div>
-      <div class="hero-actions">
-        <div class="actions-row">
-          <a class="btn-download" href={downloadUrl(mac)} data-download-link data-download-label>
-            <Icon name="download" />
-            <span>{d.hero.download.macos}</span>
-          </a>
-          <a class="glass glass--clear glass--refract glass-btn other" href="#indir">{d.hero.other}</a>
-        </div>
-        <p class="meta">{d.hero.meta} · v{release.version}</p>
-      </div>
+  <div class="sh-navspace" data-navspace aria-hidden="true"></div>
+  <p class="sh-hint" data-hint data-touch={d.hero.hintTouch} aria-hidden="true">{d.hero.hint}</p>
+  <div class="sh-spacer"></div>
+
+  <div class="sh-content" data-content>
+    <div>
+      <p class="eyebrow">
+        {d.hero.eyebrow.split(' · ')[0]} · <span lang="en">{d.hero.eyebrow.split(' · ')[1]}</span>
+      </p>
+      <h1 class="sh-h1" id="hero-title" set:html={accent(d.hero.headline, d.hero.accent)} />
     </div>
-    <h1 id="hero-title" class="brandword" aria-label="Perde" data-fit>
-      <span aria-hidden="true" class="per">PER</span><span aria-hidden="true" class="de">DE</span>
-    </h1>
-    <p class="now" aria-hidden="true"><span data-scene-title>{scenes[0].title}</span> · <span data-scene-year
-      >{scenes[0].year}</span
-    ></p>
+    <div class="sh-aside">
+      <p class="sh-body">{d.hero.sub}</p>
+      <div class="sh-ctas">
+        <a class="btn" href={downloadUrl('Perde-macOS-arm64.dmg')} data-download-link data-download-label>
+          <Icon name="download" size={18} />
+          <span>{d.hero.download.macos}</span>
+        </a>
+        <a class="txt" href="#indir" data-other-systems>{d.hero.other}<Icon name="arrow-right" size={14} /></a>
+      </div>
+      <p class="sh-meta">v{release.version} · {d.hero.meta}</p>
+    </div>
   </div>
 </section>
 
 <style>
-  .hero {
+  .sh-root {
     position: relative;
-    min-height: max(100svh, 640px);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: end;
-    overflow: clip;
-    background: var(--stage);
-    color: var(--stage-ink);
+    width: 100%;
+    height: 100svh;
+    min-height: 600px;
+    max-height: 1080px;
+    overflow: hidden;
     isolation: isolate;
+    container-type: size;
+    display: flex;
+    flex-direction: column;
+    touch-action: pan-y;
   }
-  .scenes,
-  .scrim {
+  .sh-stage {
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
+    pointer-events: none;
   }
-  .scene {
+  .sh-stage :global(.sh-canvas) {
     position: absolute;
     inset: 0;
-    opacity: 0;
-    transition: opacity 2.4s var(--ease);
-  }
-  .scene img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center 18%;
-    transform: scale(1.06);
-    transition: transform 14s linear;
-  }
-  .scene.wide img {
-    object-position: 62% 40%;
-  }
-  /* Geçici afiş sahnesi dikey ekranda: afişin alttaki yazısı kadrajın dışında kalsın */
-  @media (max-aspect-ratio: 1/1) {
-    .scene:not(.wide) img {
-      height: 128%;
-      object-position: center top;
-    }
-  }
-  .scene[data-on] {
-    opacity: 1;
-  }
-  .scene[data-on] img {
-    transform: scale(1);
-  }
-  /* İlk boyama: JS sahne seçmeden önce temaya uygun ilk sahne görünür (JS'siz de) */
-  :global(:root:not([data-theme])) .scene[data-mood='dark'][data-first],
-  :global(:root[data-theme='dark']) .scenes:not(:has(.scene[data-on])) .scene[data-mood='dark'][data-first],
-  :global(:root[data-theme='light']) .scenes:not(:has(.scene[data-on])) .scene[data-mood='light'][data-first] {
-    opacity: 1;
-    transition: none;
-  }
-  .scrim {
-    background:
-      linear-gradient(to top, rgb(10 10 12 / 0.92) 0%, rgb(10 10 12 / 0.55) 34%, rgb(10 10 12 / 0) 62%),
-      linear-gradient(to bottom, rgb(10 10 12 / 0.45), rgb(10 10 12 / 0) 22%);
-  }
-  /* Aydınlık sahnelerde başlık ve düğmeler için sol ve alt biraz daha koyu */
-  :global(:root[data-theme='light']) .scrim {
-    background:
-      linear-gradient(to right, rgb(10 10 12 / 0.5) 0%, rgb(10 10 12 / 0.12) 48%, rgb(10 10 12 / 0) 70%),
-      linear-gradient(to top, rgb(10 10 12 / 0.9) 0%, rgb(10 10 12 / 0.5) 36%, rgb(10 10 12 / 0) 64%),
-      linear-gradient(to bottom, rgb(10 10 12 / 0.4), rgb(10 10 12 / 0) 22%);
-  }
-  .hero-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: clamp(20px, 3vw, 36px);
-    padding-top: 140px;
-  }
-  .hero-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    justify-content: space-between;
-    gap: 28px 48px;
-  }
-  .hero-copy {
-    display: grid;
-    gap: 16px;
-    max-width: 640px;
-  }
-  .tagline {
-    font-size: var(--step-2);
-    font-weight: 600;
-    line-height: 1.02;
-    letter-spacing: -0.025em;
-    text-wrap: balance;
-  }
-  .sub {
-    font-size: var(--step-1);
-    line-height: 1.4;
-    color: rgb(245 245 247 / 0.82);
-    max-width: 34ch;
-  }
-  .hero-actions {
-    display: grid;
-    gap: 12px;
-    justify-items: end;
-  }
-  .actions-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .other {
-    min-height: 52px;
-    padding-inline: 22px;
-    font-size: 1rem;
-  }
-  .meta {
-    font-size: 0.9375rem;
-    color: rgb(245 245 247 / 0.72);
-  }
-  .brandword {
-    display: flex;
-    justify-content: center;
-    font-family: var(--font-brand);
-    font-weight: 500;
-    /* Yaklaşık değer; shell.ts yazı tipi yüklenince kelimeyi kenar boşlukları arasına tam sığdırır */
-    font-size: var(--brand-size, calc((100vw - 2 * var(--gutter)) / 3.9));
-    line-height: 0.74;
-    letter-spacing: 0.01em;
-    margin-bottom: -0.035em;
-    color: #f5f5f7;
-  }
-  .brandword span {
     display: block;
-    will-change: transform;
+    opacity: 0;
+    transition: opacity 0.5s ease;
   }
-  .now {
+  .sh-fallback {
     position: absolute;
-    right: var(--gutter);
-    top: 100px;
-    font-size: 0.8125rem;
-    letter-spacing: 0.04em;
-    color: rgb(245 245 247 / 0.66);
+    left: 50%;
+    top: 46%;
+    width: min(102%, 1500px);
+    max-width: none;
+    transform: translate(-50%, -50%);
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: opacity 0.5s ease;
   }
-  @media (max-width: 760px) {
-    .hero-actions {
-      justify-items: start;
+  .sh-fallback[data-placed] {
+    transform: none;
+  }
+  .sh-root[data-gl='on'] .sh-stage :global(.sh-canvas) {
+    opacity: 1;
+  }
+  .sh-root[data-gl='on'] .sh-fallback,
+  .sh-root[data-swap='1'] .sh-fallback,
+  .sh-root[data-swap='1'] .sh-stage :global(.sh-canvas) {
+    opacity: 0;
+    transition-duration: 0.25s;
+  }
+  .sh-backdrop {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    z-index: 0;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    font-weight: 600;
+    font-size: 30cqw;
+    letter-spacing: -0.06em;
+    line-height: 0.8;
+    color: color-mix(in srgb, var(--ink) 5%, transparent);
+  }
+  .sh-navspace {
+    flex: none;
+    height: 84px;
+  }
+  .sh-hint {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 70%;
+    transform: translate(-50%, 0);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+  .sh-hint::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: sh-pulse 2.4s ease-in-out infinite;
+  }
+  .sh-root[data-touched='1'] .sh-hint {
+    opacity: 0;
+  }
+  @keyframes sh-pulse {
+    0%,
+    100% {
+      transform: scale(0.6);
+      opacity: 0.45;
     }
-    .now {
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .sh-spacer {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .sh-content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    align-items: end;
+    gap: clamp(24px, 4cqw, 72px);
+    padding: 0 var(--gutter) clamp(28px, 3.4cqw, 52px);
+  }
+  .sh-h1 {
+    font-weight: 500;
+    font-size: clamp(40px, min(6.6cqw, 11.5cqh), 124px);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+  }
+  .sh-h1 :global(.line) {
+    display: block;
+  }
+  .sh-aside {
+    max-width: 400px;
+    justify-self: end;
+    padding-bottom: 0.6em;
+  }
+  .sh-body {
+    font-size: clamp(15px, 1.1cqw, 17px);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    margin: 0 0 26px;
+    color: var(--ink-2);
+  }
+  .sh-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 22px;
+  }
+  .sh-meta {
+    margin-top: 18px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  @container (max-width: 1023px) {
+    .sh-content {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .sh-aside {
+      justify-self: start;
+      max-width: 520px;
+      padding-bottom: 0;
+    }
+    .sh-h1 {
+      font-size: clamp(40px, min(9.5cqw, 9cqh), 96px);
+    }
+  }
+  @container (max-width: 639px) {
+    .sh-navspace {
+      height: 64px;
+    }
+    .sh-h1 {
+      font-size: clamp(36px, min(12.5cqw, 7.2cqh), 60px);
+      line-height: 0.94;
+    }
+    .sh-body {
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .sh-content {
+      padding-bottom: 104px;
+    }
+    .sh-content .eyebrow,
+    .sh-meta {
       display: none;
     }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .sh-hint::before {
+      animation: none;
+    }
+  }
 </style>
+
+<script>
+  import '../scripts/hero';
+</script>

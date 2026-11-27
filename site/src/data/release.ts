@@ -6,7 +6,7 @@ export const downloadUrl = (file: string) => `https://github.com/${repo}/release
 
 export type Release = { version: string; date: string; assets: Record<string, number> };
 
-const fallback: Release = { version: '0.1.0', date: '2026-11-26', assets: {} };
+const fallback: Release = { version: '0.1.0', date: '2026-11-25T23:47:00Z', assets: {} };
 
 export async function latestRelease(): Promise<Release> {
   try {
@@ -22,7 +22,7 @@ export async function latestRelease(): Promise<Release> {
     };
     return {
       version: json.tag_name.replace(/^v/, ''),
-      date: json.published_at.slice(0, 10),
+      date: json.published_at,
       assets: Object.fromEntries(json.assets.map((a) => [a.name, a.size])),
     };
   } catch {

@@ -4,8 +4,8 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "dev": "node scripts/tour-assets.mjs && astro dev",
-    "build": "node scripts/tour-assets.mjs && astro build",
+    "dev": "node scripts/tour-assets.mjs && node scripts/hero-art.mjs && astro dev",
+    "build": "node scripts/tour-assets.mjs && node scripts/hero-art.mjs && astro build",
     "preview": "astro preview",
     "check": "astro check",
     "test": "node --test tests/unit/*.test.ts",
@@ -14,14 +14,14 @@
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
     "@fontsource-variable/bodoni-moda": "5.3.0",
-    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/geist": "5.3.0",
     "@fontsource/anton": "5.3.0",
     "@fontsource/cinzel": "5.3.0",
     "@fontsource/dm-serif-display": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0",
     "@fontsource/italiana": "5.3.0",
     "@fontsource/syne": "5.3.0",
     "astro": "7.4.8",
-    "gsap": "3.15.1",
     "sharp": "0.35.5"
   },
   "devDependencies": {

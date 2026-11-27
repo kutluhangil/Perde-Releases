@@ -1,7 +1,10 @@
 // Perde ve Infuse. Infuse satırları firecore.com/infuse sayfasından (25 Kasım 2026 kopyası) doğrulandı;
 // doğrulanamayan satır yazılmaz. Infuse'ta olup olmadığı bilinmeyen Perde özellikleri ayrı listede ("only").
 type Text = { tr: string; en: string };
-type Cell = { v: 'yes' | 'no' | 'partial'; note?: Text };
+// soon: Perde'de yolda olan (sıradaki sürüm planı, docs/plan/28); yayınlanınca satır güncellenir.
+type Cell = { v: 'yes' | 'no' | 'partial'; note?: Text; soon?: Text };
+// İlk `featured` satır hep görünür; gerisi "tüm satırlar" açılınca.
+export const featured = 8;
 
 export const checkedOn = '2026-11-25';
 export const source = 'https://firecore.com/infuse';
@@ -17,27 +20,46 @@ export const rows: { topic: Text; perde: Cell; infuse: Cell }[] = [
   },
   {
     topic: { tr: 'Windows ve Linux', en: 'Windows and Linux' },
-    perde: { v: 'yes' },
+    perde: { v: 'yes', note: { tr: 'Windows ARM64 (x64 yakında); Linux x86_64 ve arm64', en: 'Windows ARM64 (x64 soon); Linux x86_64 and arm64' } },
     infuse: { v: 'no' },
   },
   {
     topic: { tr: 'Apple TV, iPhone, iPad, Vision Pro', en: 'Apple TV, iPhone, iPad, Vision Pro' },
-    perde: { v: 'no', note: { tr: 'Yalnız Mac', en: 'Mac only' } },
-    infuse: { v: 'yes' },
-  },
-  {
-    topic: { tr: 'Diskteki klasörden kütüphane', en: 'Library from a folder on disk' },
-    perde: { v: 'yes' },
+    perde: { v: 'no', note: { tr: 'Yalnız bilgisayar: Mac, Windows, Linux', en: 'Computers only: Mac, Windows, Linux' } },
     infuse: { v: 'yes' },
   },
   {
     topic: { tr: 'Ağ paylaşımları (SMB, NFS, WebDAV)', en: 'Network shares (SMB, NFS, WebDAV)' },
-    perde: { v: 'partial', note: { tr: 'Bilgisayarda klasör olarak bağlanınca', en: 'Once mounted as a folder' } },
+    perde: {
+      v: 'partial',
+      note: { tr: 'Bilgisayarda klasör olarak bağlanınca', en: 'Once mounted as a folder' },
+      soon: { tr: 'Doğrudan SMB sıradaki sürümde', en: 'Direct SMB in the next version' },
+    },
     infuse: { v: 'yes', note: { tr: 'Doğrudan', en: 'Directly' } },
   },
   {
     topic: { tr: 'Plex, Emby, Jellyfin', en: 'Plex, Emby, Jellyfin' },
-    perde: { v: 'no' },
+    perde: { v: 'no', soon: { tr: 'Jellyfin ve Emby sıradaki sürümde, Plex sonra', en: 'Jellyfin and Emby in the next version, Plex later' } },
+    infuse: { v: 'yes' },
+  },
+  {
+    topic: { tr: 'Altyazı bulma', en: 'Finding subtitles' },
+    perde: { v: 'yes', note: { tr: 'Kendiliğinden, dosya özetiyle; SubDL yedekte', en: 'Automatic, by file hash; SubDL as fallback' } },
+    infuse: { v: 'yes', note: { tr: 'OpenSubtitles’tan tek dokunuşla', en: 'One tap from OpenSubtitles' } },
+  },
+  {
+    topic: { tr: 'Jenerik ve giriş atlama', en: 'Skip intros and credits' },
+    perde: { v: 'no', soon: { tr: 'Sıradaki sürümde', en: 'In the next version' } },
+    infuse: { v: 'yes' },
+  },
+  {
+    topic: { tr: 'Reklam ve izleme', en: 'Ads and tracking' },
+    perde: { v: 'yes', note: { tr: 'Yok', en: 'None' } },
+    infuse: { v: 'yes', note: { tr: 'Yok', en: 'None' } },
+  },
+  {
+    topic: { tr: 'Diskteki klasörden kütüphane', en: 'Library from a folder on disk' },
+    perde: { v: 'yes' },
     infuse: { v: 'yes' },
   },
   {
@@ -49,11 +71,6 @@ export const rows: { topic: Text; perde: Cell; infuse: Cell }[] = [
     topic: { tr: 'Afiş ve film bilgisi', en: 'Artwork and details' },
     perde: { v: 'yes', note: { tr: 'TMDB; IMDb, Rotten Tomatoes, Metacritic puanı', en: 'TMDB; IMDb, Rotten Tomatoes, Metacritic scores' } },
     infuse: { v: 'yes', note: { tr: 'TMDB', en: 'TMDB' } },
-  },
-  {
-    topic: { tr: 'Altyazı bulma', en: 'Finding subtitles' },
-    perde: { v: 'yes', note: { tr: 'Kendiliğinden, dosya özetiyle; SubDL yedekte', en: 'Automatic, by file hash; SubDL as fallback' } },
-    infuse: { v: 'yes', note: { tr: 'OpenSubtitles’tan tek dokunuşla', en: 'One tap from OpenSubtitles' } },
   },
   {
     topic: { tr: 'Dolby Vision', en: 'Dolby Vision' },
@@ -72,18 +89,8 @@ export const rows: { topic: Text; perde: Cell; infuse: Cell }[] = [
   },
   {
     topic: { tr: 'Trakt', en: 'Trakt' },
-    perde: { v: 'no' },
+    perde: { v: 'no', soon: { tr: 'Planlandı', en: 'Planned' } },
     infuse: { v: 'yes' },
-  },
-  {
-    topic: { tr: 'Jenerik ve giriş atlama', en: 'Skip intros and credits' },
-    perde: { v: 'no' },
-    infuse: { v: 'yes' },
-  },
-  {
-    topic: { tr: 'Reklam ve izleme', en: 'Ads and tracking' },
-    perde: { v: 'yes', note: { tr: 'Yok', en: 'None' } },
-    infuse: { v: 'yes', note: { tr: 'Yok', en: 'None' } },
   },
 ];
 

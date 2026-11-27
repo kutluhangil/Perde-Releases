@@ -6,7 +6,7 @@
 
 ![macOS](https://img.shields.io/badge/macOS-26%2B%20·%20Apple%20Silicon-e8b04a?style=for-the-badge&labelColor=0a0a0c&logo=apple&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-x86__64%20·%20arm64-5e72e4?style=for-the-badge&labelColor=0a0a0c&logo=linux&logoColor=white)
-![Windows](https://img.shields.io/badge/Windows-soon-5e72e4?style=for-the-badge&labelColor=0a0a0c&logo=windows&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows%2011-ARM64%20·%20x64%20soon-5e72e4?style=for-the-badge&labelColor=0a0a0c&logo=windows&logoColor=white)
 ![Free](https://img.shields.io/badge/price-free-30d158?style=for-the-badge&labelColor=0a0a0c)
 
 *A free app that turns a folder of films into an Apple TV style library.*<br>
@@ -35,7 +35,7 @@ Get the latest version from **[Releases](https://github.com/kutluhangil/Perde-Re
 | **Linux arm64** | [`Perde-Linux-aarch64.AppImage`](https://github.com/kutluhangil/Perde-Releases/releases/latest/download/Perde-Linux-aarch64.AppImage) | Same, for ARM machines |
 | **Ubuntu / Debian x86_64** | [`perde_amd64.deb`](https://github.com/kutluhangil/Perde-Releases/releases/latest/download/perde_amd64.deb) | Uses the system's `libmpv2` |
 | **Ubuntu / Debian arm64** | [`perde_arm64.deb`](https://github.com/kutluhangil/Perde-Releases/releases/latest/download/perde_arm64.deb) | Same, for ARM machines |
-| **Windows 11** | coming soon | ARM64 first, then x64 |
+| **Windows 11 ARM64** (Snapdragon Copilot+ PCs, Surface) | [`Perde-Windows-arm64-setup.exe`](https://github.com/kutluhangil/Perde-Releases/releases/latest/download/Perde-Windows-arm64-setup.exe) | Installer, libmpv inside. x64 is coming |
 
 ## Install
 
@@ -60,11 +60,15 @@ chmod +x Perde-Linux-x86_64.AppImage
 sudo apt install ./perde_amd64.deb   # pulls in libmpv2, GTK 3 and libsecret
 ```
 
+**Windows 11 ARM64.** Run `Perde-Windows-arm64-setup.exe`. The installer is not signed yet, so SmartScreen may say
+"Windows protected your PC": click **More info › Run anyway** (once). It installs to `Program Files\Perde` and adds a
+Start menu shortcut; uninstall from **Settings › Apps**. The x64 installer is coming.
+
 ## Updates
 
 Perde looks at this repository a few seconds after it starts and shows a short note when a new version is out.
 **Settings › About › Check for updates** checks on demand and opens the right file for your system (DMG on a Mac,
-AppImage when you run the AppImage, .deb when you installed the .deb). Install it over the old one; your library,
+the installer on Windows, AppImage when you run the AppImage, .deb when you installed the .deb). Install it over the old one; your library,
 progress and settings stay. The App Store version, when it comes, will update through the App Store instead.
 
 <img src="docs/media/divider.svg" width="100%" alt="">
@@ -118,7 +122,7 @@ to the exact file by its hash.
 Perde, diskindeki film klasörünü Apple TV benzeri bir kütüphaneye çeviren ücretsiz bir uygulama. Canlı tur ve ayrıntılar: [perde.kutluhangil.dev](https://perde.kutluhangil.dev/tr/). Afişler, özetler,
 puanlar ve Türkçe altyazılar kendiliğinden gelir; hesap, abonelik ya da takip yok. Kurulum dosyaları yukarıdaki
 **Download** tablosunda ve [Releases](https://github.com/kutluhangil/Perde-Releases/releases/latest) sayfasında:
-Mac için DMG, Linux için AppImage ve .deb, Windows yakında. Yeni sürüm çıkınca uygulama haber verir;
+Mac için DMG, Linux için AppImage ve .deb, Windows 11 ARM64 için kurulum dosyası (x64 yakında). Yeni sürüm çıkınca uygulama haber verir;
 **Ayarlar › Hakkında › Güncellemeleri denetle** ile sisteme uygun dosyayı açar. Mac'te ilk açılışta "Apple doğrulayamadı"
 uyarısı çıkarsa **Sistem Ayarları › Gizlilik ve Güvenlik › Yine de Aç**'a bas.
 

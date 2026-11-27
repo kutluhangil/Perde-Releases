@@ -1,6 +1,7 @@
 ---
-// Perde ve Infuse: tarihli, kaynaklı, iki yönlü dürüst tablo.
-import { rows, only, checkedOn, source } from '../data/compare';
+// Perde ve Infuse: tarihli, kaynaklı, iki yönlü dürüst tablo. İlk satırlar karar verdirenler; gerisi tek tıkla açılır.
+import { rows, only, checkedOn, source, featured } from '../data/compare';
+import { accent } from '../lib/accent';
 import { t, type Lang } from '../i18n';
 
 interface Props {
@@ -8,19 +9,21 @@ interface Props {
 }
 const { lang } = Astro.props;
 const d = t(lang).compare;
-const mark = { yes: '●', partial: '◐', no: '○' } as const;
 const word = { yes: d.yes, partial: d.partial, no: d.no } as const;
 const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(checkedOn));
 ---
 
-<section class="compare section" id="karsilastir" aria-labelledby="compare-title">
+<section class="compare section" id="karsilastir" aria-labelledby="compare-title" data-compare>
   <div class="wrap">
-    <header class="section-head">
-      <h2 id="compare-title">{d.heading}</h2>
+    <header class="section-head" data-reveal>
+      <div>
+        <p class="eyebrow">{d.eyebrow}</p>
+        <h2 id="compare-title" set:html={accent(d.heading, d.accent)} />
+      </div>
       <p>{d.sub}</p>
     </header>
 
-    <div class="table" role="region" aria-labelledby="compare-title" tabindex="0">
+    <div class="card" data-reveal>
       <table>
         <thead>
           <tr>
@@ -31,14 +34,21 @@ const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'l
         </thead>
         <tbody>
           {
-            rows.map((r) => (
-              <tr>
+            rows.map((r, ri) => (
+              <tr data-extra={ri >= featured ? '' : undefined}>
                 <th scope="row">{r.topic[lang]}</th>
                 {[r.perde, r.infuse].map((c, i) => (
-                  <td class:list={[c.v, { perde: i === 0 }]}>
-                    <span class="mark" aria-hidden="true">{mark[c.v]}</span>
-                    <span class="visually-hidden">{word[c.v]}. </span>
-                    {c.note ? <span class="note">{c.note[lang]}</span> : <span class="note">{word[c.v]}</span>}
+                  <td class:list={[{ perde: i === 0 }]} data-col={i === 0 ? d.perde : d.infuse}>
+                    <span class="cell">
+                      <i class:list={['mark', c.v]} aria-hidden="true" />
+                      <span class="visually-hidden">{word[c.v]}. </span>
+                      <span class="note">{c.note ? c.note[lang] : word[c.v]}</span>
+                    </span>
+                    {c.soon && (
+                      <span class="soon">
+                        {d.soon} · {c.soon[lang]}
+                      </span>
+                    )}
                   </td>
                 ))}
               </tr>
@@ -46,9 +56,13 @@ const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'l
           }
         </tbody>
       </table>
+      <button class="more" type="button" aria-expanded="false" data-more-rows data-less={d.less} data-label={d.more}>
+        <span>{d.more}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
     </div>
 
-    <div class="after">
+    <div class="after" data-reveal>
       <div class="only">
         <h3>{d.onlyHeading}</h3>
         <ul>{only.map((o) => <li>{o[lang]}</li>)}</ul>
@@ -61,92 +75,206 @@ const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'l
 </section>
 
 <style>
-  .table {
-    overflow-x: auto;
-    border-radius: 24px;
+  .card {
+    border-radius: var(--radius);
     background: var(--bg-3);
-    box-shadow: 0 0 0 0.5px var(--line);
-  }
-  :global(:root[data-theme='dark']) .table {
-    background: var(--bg-2);
+    box-shadow: inset 0 0 0 1px var(--line);
+    overflow: hidden;
   }
   table {
     width: 100%;
-    min-width: 640px;
     border-collapse: collapse;
-    font-size: 1rem;
+    table-layout: fixed;
   }
   th,
   td {
+    padding: 16px clamp(16px, 2vw, 24px);
     text-align: left;
-    padding: 18px 24px;
     vertical-align: top;
+    border-bottom: 1px solid var(--line);
   }
   thead th {
-    font-size: 1.125rem;
-    font-weight: 700;
-    padding-block: 22px;
-  }
-  tbody tr {
-    border-top: 1px solid var(--line);
-  }
-  tbody th {
-    font-weight: 600;
-    width: 34%;
-  }
-  td {
-    color: var(--ink-2);
-    width: 33%;
-  }
-  .perde {
-    background: color-mix(in srgb, var(--amber) 9%, transparent);
-  }
-  thead .perde {
-    color: var(--ink);
-  }
-  .mark {
-    display: inline-block;
-    width: 1.4em;
-    font-size: 0.875rem;
-  }
-  .yes .mark {
-    color: #30a14e;
-  }
-  .partial .mark {
-    color: var(--amber);
-  }
-  .no .mark {
+    padding-block: 18px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--ink-3);
   }
-  .yes .note {
+  thead th:first-child {
+    width: 34%;
+  }
+  thead th.perde {
     color: var(--ink);
+  }
+  tbody th {
+    font-weight: 500;
+    font-size: 0.9375rem;
+    letter-spacing: -0.012em;
+  }
+  td.perde {
+    background: color-mix(in srgb, var(--ink) 3.5%, transparent);
+  }
+  .cell {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .note {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .mark {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    transform: translateY(-1px);
+  }
+  .mark.yes {
+    background: var(--yes);
+  }
+  .mark.partial {
+    background: linear-gradient(90deg, var(--amber) 50%, transparent 50%);
+    box-shadow: inset 0 0 0 1.5px var(--amber);
+  }
+  .mark.no {
+    box-shadow: inset 0 0 0 1.5px var(--ink-3);
+  }
+  .soon {
+    display: inline-block;
+    margin: 8px 0 0 19px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--amber-soft);
+    color: color-mix(in srgb, var(--amber) 80%, var(--ink));
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  :global(:root.js) [data-compare]:not([data-all]) tr[data-extra] {
+    display: none;
+  }
+  .more {
+    display: none;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    transition: color 0.2s;
+  }
+  .more:hover {
+    color: var(--ink);
+  }
+  :global(:root.js) .more {
+    display: flex;
+  }
+  [data-all] .more svg {
+    transform: rotate(180deg);
   }
   .after {
     display: grid;
-    gap: 32px 64px;
-    margin-top: 40px;
-  }
-  @media (min-width: 960px) {
-    .after {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: end;
-    }
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 24px clamp(24px, 5vw, 72px);
+    margin-top: 28px;
+    align-items: start;
   }
   .only h3 {
-    font-size: 1.25rem;
     margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
   }
   .only ul {
-    padding-left: 1.1em;
-    display: grid;
-    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+  }
+  .only li {
+    padding: 7px 13px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    font-size: 0.875rem;
     color: var(--ink-2);
   }
   .source {
-    font-size: 0.9375rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
     color: var(--ink-3);
   }
   .source a {
-    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  @media (max-width: 860px) {
+    .after {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Telefon: her satır bir kart, iki sistem alt alta */
+  @media (max-width: 640px) {
+    thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    table,
+    tbody,
+    tr,
+    th,
+    td {
+      display: block;
+    }
+    tr {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    tbody th,
+    td {
+      padding: 0;
+      border: 0;
+    }
+    tbody th {
+      margin-bottom: 8px;
+    }
+    td {
+      display: grid;
+      grid-template-columns: 4.6em 1fr;
+      padding: 4px 0;
+    }
+    td.perde {
+      background: none;
+    }
+    td::before {
+      content: attr(data-col);
+      font-size: 0.8125rem;
+      color: var(--ink-3);
+    }
+    .soon {
+      grid-column: 2;
+      justify-self: start;
+    }
   }
 </style>
+
+<script>
+  const section = document.querySelector<HTMLElement>('[data-compare]');
+  const button = section?.querySelector<HTMLButtonElement>('[data-more-rows]');
+  button?.addEventListener('click', () => {
+    const open = !section!.hasAttribute('data-all');
+    section!.toggleAttribute('data-all', open);
+    button.setAttribute('aria-expanded', String(open));
+    button.querySelector('span')!.textContent = open ? button.dataset.less! : button.dataset.label!;
+  });
+</script>

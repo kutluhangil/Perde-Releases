@@ -1,0 +1,164 @@
+---
+// İndirme: her sistem bir kart; ziyaretçinin sistemi (scripts/shell.ts) öne çıkar. Dosyalar sabit adlı Releases bağlantıları.
+import Icon from './Icon.astro';
+import { accent } from '../lib/accent';
+import { t, type Lang } from '../i18n';
+import { downloadUrl, releasesPage, type Release } from '../data/release';
+
+interface Props {
+  lang: Lang;
+  release: Release;
+}
+const { lang, release } = Astro.props;
+const d = t(lang).platforms;
+const size = (file: string) => {
+  const bytes = release.assets[file];
+  return bytes ? `${(bytes / 1048576).toFixed(0)} MB` : '';
+};
+const date = new Intl.DateTimeFormat(t(lang).locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Istanbul' }).format(
+  new Date(release.date),
+);
+---
+
+<section class="download section" id="indir" aria-labelledby="download-title">
+  <div class="wrap">
+    <header class="section-head" data-reveal>
+      <div>
+        <p class="eyebrow">{d.eyebrow}</p>
+        <h2 id="download-title" set:html={accent(d.heading, d.accent)} />
+      </div>
+      <p>{d.sub}</p>
+    </header>
+
+    <ul class="cards">
+      {
+        d.rows.map((row, ri) => (
+          <li class="card" data-platform={row.id} data-reveal style={`transition-delay:${ri * 80}ms`}>
+            <h3>{row.name}</h3>
+            <p class="req">{row.req}</p>
+            <div class="files">
+              {row.files.map((f, i) => (
+                <a class:list={[i === 0 ? 'btn' : 'file']} href={downloadUrl(f.file)} download>
+                  {i === 0 && <Icon name="download" size={18} />}
+                  <span>{f.label}</span>
+                  {size(f.file) && <small>{size(f.file)}</small>}
+                </a>
+              ))}
+            </div>
+            <p class="tip">{row.tip}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="foot" data-reveal>
+      <span>{d.version} {release.version} · {d.released} {date}</span>
+      <span>{d.updates}</span>
+      <a class="txt" href={releasesPage}>{d.all}<Icon name="arrow-up-right" size={14} /></a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+    list-style: none;
+    padding: 0;
+  }
+  @media (max-width: 900px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: clamp(22px, 2.4vw, 30px);
+    border-radius: var(--radius);
+    background: var(--bg-3);
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: box-shadow 0.4s var(--ease);
+  }
+  .card[data-yours] {
+    box-shadow:
+      inset 0 0 0 1.5px var(--ink),
+      0 24px 60px -36px rgb(0 0 0 / 0.45);
+  }
+  h3 {
+    font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.5rem);
+    letter-spacing: -0.04em;
+  }
+  .req {
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+    min-height: 2.9em;
+  }
+  .files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .files small {
+    font-size: 0.78rem;
+    opacity: 0.65;
+  }
+  .card:not([data-yours]) .btn {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+  .card:not([data-yours]) .btn:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .file {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .file:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .tip {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+    margin-top: 24px;
+    font-size: 0.875rem;
+    color: var(--ink-3);
+  }
+  .foot .txt {
+    margin-left: auto;
+    color: var(--ink);
+  }
+  @media (max-width: 640px) {
+    .foot .txt {
+      margin-left: 0;
+    }
+  }
+</style>

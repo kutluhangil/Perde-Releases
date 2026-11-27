@@ -1,17 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
-import Curtain from '../../components/Curtain.astro';
-import Header from '../../components/Header.astro';
+import Nav from '../../components/Nav.astro';
 import Hero from '../../components/Hero.astro';
 import Tour from '../../components/Tour.astro';
-import HowItWorks from '../../components/HowItWorks.astro';
-import Uses from '../../components/Uses.astro';
 import Features from '../../components/Features.astro';
-import Platforms from '../../components/Platforms.astro';
 import Compare from '../../components/Compare.astro';
-import Privacy from '../../components/Privacy.astro';
+import Download from '../../components/Download.astro';
 import Faq from '../../components/Faq.astro';
-import Closing from '../../components/Closing.astro';
+import Footer from '../../components/Footer.astro';
 import { languages, type Lang } from '../../i18n';
 import { latestRelease } from '../../data/release';
 
@@ -23,23 +19,18 @@ const release = await latestRelease();
 ---
 
 <Base lang={lang}>
-  <Curtain />
-  <Header lang={lang} />
+  <Nav lang={lang} />
   <main id="main">
     <Hero lang={lang} release={release} />
     <Tour lang={lang} />
-    <HowItWorks lang={lang} />
-    <Uses lang={lang} />
     <Features lang={lang} />
-    <Platforms lang={lang} release={release} />
     <Compare lang={lang} />
-    <Privacy lang={lang} />
+    <Download lang={lang} release={release} />
     <Faq lang={lang} />
   </main>
-  <Closing lang={lang} />
+  <Footer lang={lang} />
 </Base>
 
 <script>
   import '../../scripts/shell';
-  import '../../scripts/motion';
 </script>
